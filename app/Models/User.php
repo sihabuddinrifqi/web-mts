@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Request;
@@ -103,5 +104,27 @@ class User extends Authenticatable
         $result = $query->paginate($limit, ['*'], 'page', $page);
         abort_if($result->isEmpty(), 404, 'No records found');
         return $result;
+    }
+    /**
+     * Generate unique username for any user type.
+     *
+     * @param string $name
+     * @param string $role
+     * @return string
+     */
+    public static function generateUsername(string $name, string $role): string
+    {
+        // Ambil nama depan, lowercase
+        $base = Str::lower(explode(' ', $name)[0]);
+        $username = $base;
+        $counter = 1;
+
+        // Pastikan username unik
+        while (self::where('username', $username)->exists()) {
+            $username = $base . $counter;
+            $counter++;
+        }
+
+        return $username;
     }
 }

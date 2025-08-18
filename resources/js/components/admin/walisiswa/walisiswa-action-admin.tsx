@@ -43,7 +43,7 @@ export const WalisiswaActionAdmin: React.FC<{ walisiswa: WaliSiswa }> = (props) 
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <WalisiswaFormEditAdmin walisiswa={props.walisiswa} open={editDialogOpen} onOpenChange={setEditDialogOpen} />
+            <WalisiswaFormEditAdmin id={props.walisiswa.id} open={editDialogOpen} onOpenChange={setEditDialogOpen} />
             <WalisiswaFormDeleteAdmin id={props.walisiswa.id} open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} />
         </>
     );

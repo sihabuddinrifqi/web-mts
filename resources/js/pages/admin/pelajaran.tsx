@@ -24,7 +24,6 @@ export default function Page({ prop }: { prop: AdminPelajaranResponse }) {
                         title="Data Mata Pelajaran Siswa"
                         description="Berisi daftar mata pelajaran yang diajarkan kepada siswa lengkap dengan nama pengampu, semester berjalan, dan jumlah peserta."
                     />
-
                     <PelajaranFormAddAdmin />
                 </div>
                 <Separator />

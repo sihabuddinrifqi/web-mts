@@ -7,6 +7,7 @@ import { AdminPelajaranResponse } from '@/types/admin/pelajaran';
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { PelajaranActionAdmin } from './pelajaran-action-admin';
+import { Pelajaran } from '@/types/admin/pelajaran';
 
 type Props = {
     siswaData: AdminPelajaranResponse;
@@ -19,17 +20,18 @@ type Props = {
 export default function DataTablePelajaranSiswaAdmin({ siswaData, filters }: Props) {
     const { url } = usePage();
     const [searchInput, setSearchInput] = useState(filters.search || '');
+    const [pelajaranData, setPelajaranData] = useState<Pelajaran[]>([]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         router.get(url.split('?')[0], { search: searchInput, page: 1 }, { preserveState: true, replace: true });
     };
 
-    // const handlePageChange = (pageUrl: string | null) => {
-    //     if (pageUrl) {
-    //         router.visit(pageUrl, { preserveState: true, replace: true });
-    //     }
-    // };
+    const handlePageChange = (pageUrl: string | null) => {
+        if (pageUrl) {
+            router.visit(pageUrl, { preserveState: true, replace: true });
+        }
+    };
 
     return (
         <div className="flex flex-col gap-6 pt-2">
@@ -51,37 +53,25 @@ export default function DataTablePelajaranSiswaAdmin({ siswaData, filters }: Pro
                 <Table className="min-w-[900px]">
                     <TableHeader>
                         <TableRow className="bg-muted">
-                            {/* <TableHead>No</TableHead> */}
                             <TableHead>Nama Mata Pelajaran</TableHead>
                             <TableHead>Pengampu</TableHead>
                             <TableHead>Semester</TableHead>
                             <TableHead>Jumlah Siswa</TableHead>
                             <TableHead></TableHead>
-                            {/* <TableHead>Alamat</TableHead> */}
-                            {/* <TableHead>Jenis Kelamin</TableHead>
-                            <TableHead>Nomor HP</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead>Nama Orang Tua</TableHead> */}
+                         
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {siswaData.data.length > 0 ? (
-                            siswaData.data.map((siswa) => (
-                                <TableRow key={siswa.id}>
-                                    {/* <TableCell>{(siswaData.current_page - 1) * siswaData.per_page + index + 1}</TableCell> */}
-                                    <TableCell>{siswa.nama_pelajaran}</TableCell>
-                                    <TableCell>{siswa.pengampu?.name}</TableCell>
-                                    <TableCell>{siswa.semester}</TableCell>
-                                    <TableCell>{siswa.semester}</TableCell>
+                            siswaData.data.map((pelajaran) => (
+                                <TableRow key={pelajaran.id}>
+                                    <TableCell>{pelajaran.nama_pelajaran}</TableCell>
+                                    <TableCell>{pelajaran.pengampu?.name}</TableCell>
+                                    <TableCell>{pelajaran.semester}</TableCell>
+                                    <TableCell>{pelajaran.siswa_count + 1}</TableCell> 
                                     <TableCell>
-                                        <PelajaranActionAdmin id={siswa.id} />
+                                        <PelajaranActionAdmin id={pelajaran.id} />
                                     </TableCell>
-
-                                    {/* <TableCell>{siswa.alamat}</TableCell> */}
-                                    {/* <TableCell>{siswa.jenis_kelamin}</TableCell>
-                                    <TableCell>{siswa.phone}</TableCell>
-                                    <TableCell>{siswa.siswa_role}</TableCell>
-                                    <TableCell>{siswa.ortu?.name || '-'}</TableCell> */}
                                 </TableRow>
                             ))
                         ) : (
@@ -96,7 +86,7 @@ export default function DataTablePelajaranSiswaAdmin({ siswaData, filters }: Pro
             </div>
 
             {/* Pagination */}
-            {/* <div className="flex w-full flex-wrap items-center justify-center gap-2">
+            <div className="flex w-full flex-wrap items-center justify-center gap-2">
                 {siswaData.links.map((link, index) => (
                     <Button
                         key={index}
@@ -108,7 +98,7 @@ export default function DataTablePelajaranSiswaAdmin({ siswaData, filters }: Pro
                         className="min-w-8"
                     />
                 ))}
-            </div> */}
+            </div>
         </div>
     );
 }

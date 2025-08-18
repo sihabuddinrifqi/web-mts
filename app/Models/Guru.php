@@ -18,4 +18,6 @@ class Guru extends User
     {
         return $this->hasMany(Siswa::class, 'guru_id');
     }
+
+    
 }

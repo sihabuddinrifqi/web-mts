@@ -26,6 +26,7 @@ export interface WaliSiswa extends User {
     alamat: string;
     jenis_kelamin: string;
     anak?: Siswa[];
+    phone_number: string | null;
 }
 
 export interface Guru extends User {

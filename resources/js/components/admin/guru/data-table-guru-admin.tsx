@@ -19,6 +19,8 @@ type Props = {
 };
 
 export default function DataTableGuruAdmin({ siswaData, filters }: Props) {
+    console.log(siswaData);
+
     const { url } = usePage();
     const [searchInput, setSearchInput] = useState(filters.search || '');
 
@@ -56,6 +58,8 @@ export default function DataTableGuruAdmin({ siswaData, filters }: Props) {
                             <TableHead>No</TableHead>
                             <TableHead>Nama Lengkap</TableHead>
                             <TableHead>Jumlah Siswa Didik</TableHead>
+                            <TableHead>Nomor Telepon</TableHead>
+                            <TableHead>Username | Password awal</TableHead>
                             <TableHead>List Pelajaran</TableHead>
                             <TableHead>List Siswa Didik</TableHead>
                             <TableHead></TableHead>
@@ -73,6 +77,10 @@ export default function DataTableGuruAdmin({ siswaData, filters }: Props) {
                                     <TableCell>{(siswaData.current_page - 1) * siswaData.per_page + index + 1}</TableCell>
                                     <TableCell>{siswa.name}</TableCell>
                                     <TableCell>{siswa.anak?.length}</TableCell>
+                                    <TableCell>{siswa.phone}</TableCell>
+                                    <TableCell>
+                                        {siswa.username as string} | {siswa.first_password as string}
+                                    </TableCell>
                                     <TableCell>
                                         <LessonViewGuruAdmin id={siswa.id} />
                                     </TableCell>

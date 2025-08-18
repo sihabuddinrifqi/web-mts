@@ -7,6 +7,6 @@ export type NilaiRequest = {
 export type PelajaranRequest = {
     nama_pelajaran: string;
     semester: number;
-    waktu: string;
     pengampu_id: number;
+    siswa_ids: number[];
 };

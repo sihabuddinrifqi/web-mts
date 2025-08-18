@@ -45,11 +45,11 @@ export default function SiswaFormDeleteAdmin({ id, open, onOpenChange }: SiswaFo
                     </div>
                     <div>
                         <p className="text-sm">Wali Siswa</p>
-                        <p className="font-medium">{data?.ortu.name}</p>
+                        <p className="font-medium">{data?.ortu?.name}</p>
                     </div>
                     <div className="col-span-2">
                         <p className="text-sm">Guru</p>
-                        <p className="font-medium">{data?.guru.name}</p>
+                        <p className="font-medium">{data?.guru?.name}</p>
                     </div>
                 </div>
 

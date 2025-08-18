@@ -8,7 +8,7 @@ import { Izin } from '@/types/izin';
 import { APIPaginateResponse } from '@/types/response';
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { IzinActionWali } from './izin-action-walii';
+import { IzinActionWali } from './izin-action-wali';
 
 type Props = {
     siswaData: APIPaginateResponse<Izin>;
@@ -95,7 +95,7 @@ export default function DataTableIzinWali({ siswaData, filters }: Props) {
                                         </Button>
                                     </TableCell> */}
                                     <TableCell>
-                                        <IzinActionWali />
+                                        <IzinActionWali status={data.status} id={data.id}/>
                                     </TableCell>
                                 </TableRow>
                             ))

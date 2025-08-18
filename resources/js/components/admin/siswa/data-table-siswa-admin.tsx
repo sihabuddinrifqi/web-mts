@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AdminSiswaPaginationResponse } from '@/types/admin/siswa';
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { SiswaActionAdmin } from './siswa-action-admin';
 import { SiswaDetail } from './siswa-detail';
 import TranscriptViewAdmin from './transcript-view-admin';
 
@@ -76,6 +77,9 @@ export default function DataTableSiswaAdmin({ siswaData, filters }: Props) {
                                     </TableCell>
                                     <TableCell>
                                         <SiswaDetail data={siswa} />
+                                    </TableCell>
+                                    <TableCell>
+                                        <SiswaActionAdmin id={siswa.id} />
                                     </TableCell>
                                 </TableRow>
                             ))

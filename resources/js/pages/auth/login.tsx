@@ -113,7 +113,9 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         <form className="space-y-6" onSubmit={submit}>
                             <div>
                                 <Label htmlFor="email">Email</Label>
-                                <Input id="email" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} required autoFocus />
+                                <Input id="email" 
+                                //type="email" 
+                                value={data.email} onChange={(e) => setData('email', e.target.value)} required autoFocus />
                                 <InputError message={errors.email} />
                             </div>
                             <div>

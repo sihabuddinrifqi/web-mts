@@ -1,7 +1,7 @@
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
 import DataTableIzinWali from '@/components/wali/izin/data-table-izin-wali';
-import IzinFormAddWali from '@/components/wali/izin/izzin-form-add-wali';
+import IzinFormAddWali from '@/components/wali/izin/izin-form-add-wali';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Izin } from '@/types/izin';

@@ -52,7 +52,7 @@ class GuruManagerController extends Controller
         $password = Str::random(8);
         $validated['password'] = bcrypt($password);
         $validated['first_password'] = $password;
-        $validated['username'] = 'guru' . random_int(10000, 99999);
+        $validated['username'] = Guru::generateUsername($validated['name'], 'guru');
         $validated['role'] = 'guru';
         Guru::create($validated);
         return redirect()->route('admin.guru.index');

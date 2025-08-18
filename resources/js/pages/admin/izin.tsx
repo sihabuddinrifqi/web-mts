@@ -1,5 +1,5 @@
 import DataTableIzinAdmin from '@/components/admin/izin/data-table-izin-admin';
-import IzinFormAddAdmin from '@/components/admin/izin/izzin-form-add-admin';
+import IzinFormAddAdmin from '@/components/admin/izin/izin-form-add-admin';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';

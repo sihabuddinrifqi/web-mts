@@ -12,6 +12,8 @@ export const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
+        // role_access: ['admin'],
+        role_access: [''],
     },
 
     // admin

@@ -11,7 +11,19 @@ class Pelajaran extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['nama_pelajaran', 'semester', 'waktu', 'pengampu_id'];
+    protected $fillable = ['nama_pelajaran', 'semester', 'pengampu_id'];
+
+    public function siswa()
+{
+    // Pastikan nama tabel pivot benar ('nilai') dan kolom foreign key sesuai
+    return $this->belongsToMany(
+        User::class,       // Model Siswa, bisa juga App\Models\Siswa jika ada
+        'nilais',           // Tabel pivot
+        'pelajaran_id',    // FK di tabel pivot yang mengacu ke pelajaran
+        'siswa_id'         // FK di tabel pivot yang mengacu ke siswa
+    );
+}
+
 
     public function pengampu() // Guru who teaches
     {

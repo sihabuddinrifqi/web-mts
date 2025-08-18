@@ -29,7 +29,8 @@ class WaliSiswaManagerController extends Controller
         $password = Str::random(8);
         $validated['password'] = bcrypt($password);
         $validated['first_password'] = $password;
-        $validated['username'] = 'walisiswa' . random_int(10000, 99999);
+
+        $validated['username'] = WaliSiswa::generateUsername($validated['name'], 'walisiswa');
         $validated['role'] = 'walisiswa';
         WaliSiswa::create($validated);
         return redirect()->route('admin.walisiswa.index');
@@ -40,9 +41,10 @@ class WaliSiswaManagerController extends Controller
         return redirect()->route('admin.walisiswa.index');
     }
 
-    public function destroy(WaliSiswa $waliSiswa)
-    {
-        $waliSiswa->delete();
-        return redirect()->route('admin.walisiswa.index');
-    }
+    public function destroy(WaliSiswa $walisiswa)
+{
+    // Logika untuk menghapus
+    $walisiswa->delete();
+    return redirect()->back()->with('success', 'Data berhasil dihapus.');
+}
 }

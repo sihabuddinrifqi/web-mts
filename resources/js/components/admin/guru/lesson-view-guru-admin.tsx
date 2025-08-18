@@ -2,14 +2,28 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { fetchApi } from '@/lib/utils';
-import { Guru } from '@/types/admin/guru';
 import { APIResponse } from '@/types/response';
+import { Guru } from '@/types/walisiswa/anak';
 import { BookOpen } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 export default function LessonViewGuruAdmin({ id }: { id: number }) {
-    const [semester, setSemester] = useState('Ganjil');
+    const [semester, setSemester] = useState('Semua');
     const [dataGuru, setDataGuru] = useState<Guru | undefined>();
+
+    // Get unique semesters from the data
+    const availableSemesters = useMemo(() => {
+        if (!dataGuru?.pelajaran) return [];
+        const semesters = [...new Set(dataGuru.pelajaran.map((grade) => grade.semester))];
+        return semesters.sort();
+    }, [dataGuru?.pelajaran]);
+
+    // Filter data based on selected semester
+    const filteredPelajaran = useMemo(() => {
+        if (!dataGuru?.pelajaran) return [];
+        if (semester === 'Semua') return dataGuru.pelajaran;
+        return dataGuru.pelajaran.filter((grade) => grade.semester.toString() === semester);
+    }, [dataGuru?.pelajaran, semester]);
 
     return (
         <Dialog>
@@ -38,14 +52,21 @@ export default function LessonViewGuruAdmin({ id }: { id: number }) {
                             </div>
                         </div>
 
-                        <div className="w-48">
+                        <div className="w-48 space-y-1">
+                            <label className="text-sm" htmlFor="">
+                                Semester
+                            </label>
                             <Select value={semester} onValueChange={setSemester}>
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Pilih Semester" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="Ganjil">Ganjil</SelectItem>
-                                    <SelectItem value="Genap">Genap</SelectItem>
+                                    <SelectItem value="Semua">Semua</SelectItem>
+                                    {availableSemesters.map((sem) => (
+                                        <SelectItem key={sem} value={sem.toString()}>
+                                            {sem}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -60,12 +81,20 @@ export default function LessonViewGuruAdmin({ id }: { id: number }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {dataGuru?.pelajaran?.map((grade, index) => (
-                                    <tr key={index} className="border-t">
-                                        <td className="px-4 py-4">{grade.nama_pelajaran}</td>
-                                        <td className="px-4 py-4">{grade.semester}</td>
+                                {filteredPelajaran.length > 0 ? (
+                                    filteredPelajaran.map((grade, index) => (
+                                        <tr key={index} className="border-t">
+                                            <td className="px-4 py-4">{grade.nama_pelajaran}</td>
+                                            <td className="px-4 py-4">{grade.semester}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={2} className="text-muted-foreground px-4 py-8 text-center">
+                                            {dataGuru ? 'Tidak ada mata pelajaran untuk semester yang dipilih' : 'Memuat data...'}
+                                        </td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
                     </div>

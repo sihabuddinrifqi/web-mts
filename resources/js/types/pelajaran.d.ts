@@ -22,6 +22,8 @@ export type Pelajaran = {
     updated_at: string;
     nilai: Nilai[];
     pengampu?: Guru;
+    siswa_count: number;
+
 };
 
 export type APINilai = {

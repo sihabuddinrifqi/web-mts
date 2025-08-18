@@ -1,8 +1,5 @@
 'use client';
 
-import type React from 'react';
-
-import {  EllipsisVertical, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,13 +10,18 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import IzinFormDeleteAdmin from './izin-form-delete-wali';
+import { EllipsisVertical, Trash2 } from 'lucide-react';
+import IzinFormDeleteWali from './izin-form-delete-wali';
 
+// Definisikan tipe props yang akan diterima oleh komponen
+type IzinActionWaliProps = {
+    id: number;
+    status: 'accepted' | 'rejected' | null;
+};
 
-export const IzinActionWali: React.FC = () => {
-
+// Ubah menjadi function component biasa yang menerima props
+export function IzinActionWali({ id, status }: IzinActionWaliProps) {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
- 
 
     return (
         <>
@@ -33,14 +35,17 @@ export const IzinActionWali: React.FC = () => {
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Aksi</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-
-                    <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)}>
+                    {/* Tambahkan kondisi 'disabled'.
+                      Wali tidak bisa menghapus izin jika statusnya sudah diubah oleh admin (accepted/rejected).
+                    */}
+                    <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)} disabled={status !== null}>
                         <Trash2 className="mr-1 h-4 w-4" /> Hapus Izin
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <IzinFormDeleteAdmin open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} />
+            {/* Pastikan 'id' yang diterima dari props diteruskan ke komponen form delete */}
+            <IzinFormDeleteWali id={id} open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} />
         </>
     );
-};
+}

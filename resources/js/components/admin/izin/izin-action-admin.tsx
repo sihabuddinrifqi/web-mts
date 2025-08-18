@@ -60,7 +60,7 @@ export function IzinActionAdmin({ id, status }: { id: number; status: 'accepted'
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <IzinFormDeleteAdmin open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} />
+            <IzinFormDeleteAdmin id={id} open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} />
         </>
     );
 }

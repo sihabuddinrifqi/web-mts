@@ -29,3 +29,4 @@ Route::prefix('/admin')
         ->only(['index', 'store', 'update', 'destroy']);
     }
 );
+

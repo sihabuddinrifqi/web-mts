@@ -11,24 +11,24 @@ import { useState } from 'react';
 
 export function SiswaDetail({ data }: { data: Siswa }) {
     const [dataWali, setDataWali] = useState<WaliSiswa>();
-    const [dataGuru, setDataGuru] = useState<Guru>();
+    const [dataguru, setDataguru] = useState<Guru>();
 
     return (
         <Dialog>
             <DialogTrigger asChild>
                 <Button variant="default">
-                    <Search /> Detail Siswa
+                    <Search /> Detail siswa
                 </Button>
             </DialogTrigger>
             <DialogContent
                 className="max-h-screen overflow-y-auto sm:max-w-[625px]"
                 onOpenAutoFocus={(_) => {
-                    fetchApi<APIResponse<Guru>>(route('api.detail.guru', data.guru_id)).then((resp) => setDataGuru(resp.data));
+                    fetchApi<APIResponse<Guru>>(route('api.detail.guru', data.guru_id)).then((resp) => setDataguru(resp.data));
                     fetchApi<APIResponse<WaliSiswa>>(route('api.detail.walisiswa', data.ortu_id)).then((resp) => setDataWali(resp.data));
                 }}
             >
                 <DialogHeader>
-                    <DialogTitle>Detail Data Siswa Baru</DialogTitle>
+                    <DialogTitle>Detail Data siswa Baru</DialogTitle>
                     <DialogDescription>Detail data siswa yang tercatat di sistem.</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-6 border-t py-4">
@@ -92,9 +92,9 @@ export function SiswaDetail({ data }: { data: Siswa }) {
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div className="flex flex-col space-y-2">
                             <label htmlFor="guru" className="font-medium">
-                                Guru Pembimbing
+                                guru Pembimbing
                             </label>
-                            <Input id="date" placeholder="Guru Pembimbing" value={dataGuru?.name} readOnly />
+                            <Input id="date" placeholder="guru Pembimbing" value={dataguru?.name} readOnly />
                         </div>
 
                         <div className="flex flex-col space-y-2">

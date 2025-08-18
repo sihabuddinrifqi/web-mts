@@ -60,4 +60,22 @@ class WalisiswaController extends Controller
         Izin::create($validated);
         return redirect(route('walisiswa.izin'));
     }
+    public function destroy_izin(Izin $izin) // <-- TAMBAHKAN METODE INI DI SINI
+    {
+        // Otorisasi: Pastikan wali hanya bisa menghapus izin yang mereka buat.
+        if ($izin->created_by !== Auth::id()) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk melakukan aksi ini.');
+        }
+        
+        // Logika tambahan: Wali tidak boleh menghapus izin yang sudah diproses admin.
+        if ($izin->status !== null) {
+            return redirect()->back()->with('error', 'Izin yang sudah diproses tidak dapat dihapus.');
+        }
+
+        $izin->delete();
+
+        return redirect()->route('wali.izin')->with('success', 'Pengajuan izin berhasil dihapus.');
+    }
+
+    
 }

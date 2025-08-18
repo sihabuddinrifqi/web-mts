@@ -32,10 +32,10 @@ export function SiswaActionAdmin({ id }: { id: number }) {
                     <DropdownMenuSeparator />
 
                     <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
-                        <PenBox className="mr-1 h-4 w-4" /> Edit Siswa
+                        <PenBox className="mr-1 h-4 w-4" /> Edit siswa
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)}>
-                        <Trash2 className="mr-1 h-4 w-4" /> Hapus Siswa
+                        <Trash2 className="mr-1 h-4 w-4" /> Hapus siswa
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
