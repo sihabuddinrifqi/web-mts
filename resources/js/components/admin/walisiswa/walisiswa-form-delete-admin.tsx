@@ -22,7 +22,7 @@ export default function WalisiswaFormDeleteAdmin({ open, onOpenChange, id }: Wal
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
                 className="max-h-screen overflow-y-auto sm:max-w-2xl"
-                // 2. Fetch data saat dialog terbuka, mirip seperti komponen Guru
+                
                 onOpenAutoFocus={(ev) =>
                     fetchApi<APIResponse<Walisiswa>>(route('api.detail.walisiswa', id)).then((resp) => setData(resp.data))
                 }

@@ -38,4 +38,10 @@ class Siswa extends User
         $newNumber = str_pad($lastNumber + 1, 5, '0', STR_PAD_LEFT);
         return $angkatan . $newNumber;
     }
+
+    public function presensis()
+{
+    return $this->hasMany(Presensi::class, 'siswa_id');
+}
+
 }

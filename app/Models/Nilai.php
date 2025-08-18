@@ -11,7 +11,11 @@ class Nilai extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nilai', 'semester', 'pelajaran_id', 'siswa_id'];
+    protected $fillable = [
+    // 'nilai', 
+    'semester', 
+    'pelajaran_id', 
+    'siswa_id'];
 
     public function pelajaran()
     {
@@ -43,4 +47,10 @@ class Nilai extends Model
         abort_if($result->isEmpty(), 404, 'No records found');
         return $result;
     }
+
+    public function detail()
+{
+    return $this->hasMany(NilaiDetail::class, 'nilai_id');
+}
+
 }

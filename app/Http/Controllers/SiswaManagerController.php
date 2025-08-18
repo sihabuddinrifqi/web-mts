@@ -54,10 +54,23 @@ class SiswaManagerController extends Controller
         return redirect(route('admin.siswa.index'));
     }
 
-    public function update(Siswa $siswa)
-    {
-        return redirect(route('admin.siswa.index'));
-    }
+    public function update(Request $request, Siswa $siswa)
+{
+    $validated = $request->validate([
+        'name'      => 'required|string|max:255',
+        'kelas'     => 'nullable|string|max:50',
+        'angkatan'  => 'required|string|max:10',
+        'alamat'    => 'nullable|string|max:255',
+    ]);
+
+    // cukup update sekali
+    $siswa->update($validated);
+
+    return redirect()
+        ->route('admin.siswa.index')
+        ->with('success', 'Data siswa berhasil diperbarui');
+}
+
 
     /**
      * Remove the specified resource from storage.

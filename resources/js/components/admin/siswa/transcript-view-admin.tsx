@@ -1,139 +1,198 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { fetchApi } from '@/lib/utils';
-import { APIResponse } from '@/types/response';
+import { Printer, Search } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { Siswa } from '@/types/users';
-import { FileTextIcon, Printer } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { APIResponse } from '@/types/response';
 
-export default function TranscriptViewAdmin({ id }: { id: number }) {
+// Definisikan tipe data yang dibutuhkan secara lokal
+// Untuk solusi permanen, ekspor tipe ini dari file tipe utama Anda
+interface NilaiDetail {
+    id?: number;
+    jenis: 'UH' | 'PTS' | 'PAS';
+    nilai: number;
+}
+
+interface Pelajaran {
+    nama_pelajaran: string;
+    semester: number | string;
+}
+
+interface Nilai {
+    id: number;
+    pelajaran: Pelajaran;
+    detail?: NilaiDetail[];
+    semester: string; // Pastikan properti semester ada di tipe Nilai
+}
+
+// Helper function to find a specific grade from the detail array
+const findGrade = (details: NilaiDetail[] | undefined, type: 'UH' | 'PTS' | 'PAS'): number => {
+    if (!details) return 0;
+    const found = details.find((d) => d.jenis === type);
+    return found ? found.nilai : 0;
+};
+
+// Helper function to calculate the average of three grades
+const calculateAverage = (uh: number, pts: number, pas: number): number => {
+    const average = (uh + pts + pas) / 3;
+    return parseFloat(average.toFixed(2));
+};
+
+export default function SiswaViewAdmin({ id }: { id: number }) {
     const [semester, setSemester] = useState('Semua');
-    const [siswa, setDataSiswa] = useState<Siswa | null>(null);
+    const [siswaData, setSiswaData] = useState<Siswa | null>(null);
+
+    // Fetch data when the dialog opens
+    useEffect(() => {
+        if (id) {
+            fetch(route('api.nilai.siswa', id))
+                .then(response => response.json())
+                .then((resp: APIResponse<Siswa>) => {
+                    setSiswaData(resp.data);
+                })
+                .catch(error => console.error('Error fetching student data:', error));
+        }
+    }, [id]);
+
+    // Dapatkan daftar semester unik dari data nilai siswa
+    const availableSemesters = useMemo(() => {
+        if (!siswaData?.nilai) return [];
+        const semesters = Array.from(new Set(siswaData.nilai.map((nilai) => nilai.semester)));
+        return semesters.sort();
+    }, [siswaData?.nilai]);
 
     // Filter data nilai berdasarkan semester yang dipilih
-    const filteredNilai = useMemo(() => {
-        if (!siswa?.nilai) return [];
-        if (semester === 'Semua') return siswa.nilai;
-        return siswa.nilai.filter((nilai) => nilai.semester === semester);
-    }, [siswa?.nilai, semester]);
+    const filteredGrades = useMemo(() => {
+        if (!siswaData?.nilai) return [];
+        if (semester === 'Semua') return siswaData.nilai;
+        return siswaData.nilai.filter((nilai) => nilai.semester === semester);
+    }, [siswaData?.nilai, semester]);
 
-    // Hitung rata-rata dari data yang sudah difilter
-    const average = filteredNilai.length > 0 ? filteredNilai.reduce((sum, item) => sum + item.nilai, 0) / filteredNilai.length : 0;
+    // Hitung rata-rata keseluruhan dari data yang sudah difilter
+    const overallAverage = () => {
+        if (!filteredGrades || filteredGrades.length === 0) return 0;
+        
+        const totalOfAverages = filteredGrades.reduce((sum, item) => {
+            const uh = findGrade(item.detail, 'UH');
+            const pts = findGrade(item.detail, 'PTS');
+            const pas = findGrade(item.detail, 'PAS');
+            return sum + calculateAverage(uh, pts, pas);
+        }, 0);
 
-    // Dapatkan daftar semester unik dari data
-    const availableSemesters = useMemo(() => {
-        if (!siswa?.nilai) return [];
-        const semesters = Array.from(new Set(siswa.nilai.map((nilai) => nilai.semester)));
-        return semesters.sort();
-    }, [siswa?.nilai]);
+        return parseFloat((totalOfAverages / filteredGrades.length).toFixed(2));
+    };
 
     return (
         <Dialog>
             <DialogTrigger asChild>
                 <Button variant="default" size={'sm'}>
-                    <FileTextIcon /> Lihat
+                     Transkip Nilai
                 </Button>
             </DialogTrigger>
-            <DialogContent
-                className="max-h-screen overflow-y-auto sm:max-w-[625px]"
-                onOpenAutoFocus={(_) => {
-                    fetchApi<APIResponse<Siswa>>(route('api.nilai.siswa', id)).then((resp) => {
-                        setDataSiswa(resp.data);
-                    });
-                }}
-            >
+            <DialogContent className="max-h-screen overflow-y-auto sm:max-w-4xl">
                 <DialogHeader className="border-b pb-4">
-                    <DialogTitle className="text-center">Transkip Nilai Siswa</DialogTitle>
+                    <DialogTitle className="text-center">Transkrip Nilai Siswa</DialogTitle>
                     <DialogDescription className="mx-auto max-w-sm text-center">
-                        Ringkasan hasil belajar siswa selama mengikuti program pendidikan di Pondok Pesantren.
+                        Ringkasan hasil belajar siswa selama mengikuti program pendidikan.
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-6 border-b">
-                    <div className="flex items-end justify-between">
-                        <div className="space-y-4">
-                            <div className="space-y-1">
-                                <div className="text-sm">Nama Siswa</div>
-                                <div className="font-semibold">{siswa?.name}</div>
+                {!siswaData ? (
+                    <div className="py-12 text-center">Memuat data siswa...</div>
+                ) : (
+                    <>
+                        <div className="space-y-6 border-b py-4">
+                            <div className="flex items-end justify-between">
+                                <div className="space-y-4">
+                                    <div className="space-y-1">
+                                        <div className="text-sm">Nama Siswa</div>
+                                        <div className="font-semibold">{siswaData.name}</div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="text-sm">Angkatan</div>
+                                        <div className="font-semibold">{siswaData.angkatan}</div>
+                                    </div>
+                                </div>
+                                <div className="w-48">
+                                    <Select value={semester} onValueChange={setSemester}>
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Pilih Semester" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Semua">Semua</SelectItem>
+                                            {availableSemesters.map((sem) => (
+                                                <SelectItem key={sem} value={sem}>
+                                                    {sem}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
 
-                            <div className="space-y-1">
-                                <div className="text-sm">Angkatan</div>
-                                <div className="font-semibold">{siswa?.angkatan}</div>
+                            <div className="overflow-hidden rounded-md border">
+                                <table className="w-full text-sm">
+                                    <thead className="bg-muted">
+                                        <tr>
+                                            <th className="px-4 py-3 text-left font-medium">Mata Pelajaran</th>
+                                            <th className="px-4 py-3 text-center font-medium">UH</th>
+                                            <th className="px-4 py-3 text-center font-medium">PTS</th>
+                                            <th className="px-4 py-3 text-center font-medium">PAS</th>
+                                            <th className="px-4 py-3 text-center font-medium">Rata-Rata</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredGrades.length > 0 ? (
+                                            filteredGrades.map((nilai, index) => {
+                                                const uh = findGrade(nilai.detail, 'UH');
+                                                const pts = findGrade(nilai.detail, 'PTS');
+                                                const pas = findGrade(nilai.detail, 'PAS');
+                                                const average = calculateAverage(uh, pts, pas);
+                                                return (
+                                                    <tr key={index} className="border-t">
+                                                        <td className="px-4 py-2">{nilai.pelajaran.nama_pelajaran}</td>
+                                                        <td className="px-4 py-2 text-center">{uh}</td>
+                                                        <td className="px-4 py-2 text-center">{pts}</td>
+                                                        <td className="px-4 py-2 text-center">{pas}</td>
+                                                        <td className="px-4 py-2 text-center font-semibold">{average}</td>
+                                                    </tr>
+                                                );
+                                            })
+                                        ) : (
+                                            <tr className="border-t">
+                                                <td colSpan={5} className="px-4 py-4 text-center text-muted-foreground">
+                                                    Tidak ada data nilai untuk semester ini.
+                                                </td>
+                                            </tr>
+                                        )}
+                                        {filteredGrades.length > 0 && (
+                                            <tr className="bg-muted border-t font-bold">
+                                                <td colSpan={4} className="px-4 py-2 text-right">
+                                                    Rata-Rata Keseluruhan
+                                                </td>
+                                                <td className="px-4 py-2 text-center">{overallAverage()}</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
-                        <div className="w-48 space-y-1">
-                            <label className="text-sm" htmlFor="">
-                                Semester
-                            </label>
-                            <Select value={semester} onValueChange={setSemester}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Pilih Semester" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Semua">Semua</SelectItem>
-                                    {availableSemesters.map((sem) => (
-                                        <SelectItem key={sem} value={sem}>
-                                            {sem}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-
-                    <div className="overflow-hidden rounded-md border">
-                        <table className="w-full">
-                            <thead className="bg-muted">
-                                <tr>
-                                    <th className="px-4 py-3 text-left text-sm font-medium">Mata Pelajaran</th>
-                                    <th className="px-4 py-3 text-left text-sm font-medium">Semester</th>
-                                    <th className="px-4 py-3 text-right text-sm font-medium">Nilai</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredNilai.map((nilai, index) => (
-                                    <tr key={index} className="border-t">
-                                        <td className="px-4 py-4">{nilai.pelajaran.nama_pelajaran}</td>
-                                        <td className="px-4 py-4">{nilai.semester}</td>
-                                        <td className="px-4 py-4 text-right">{nilai.nilai}</td>
-                                    </tr>
-                                ))}
-                                {filteredNilai.length > 0 && (
-                                    <tr className="bg-muted border-t">
-                                        <td colSpan={2} className="px-4 py-4 font-medium">
-                                            Nilai Rata rata
-                                        </td>
-                                        <td className="px-4 py-4 text-right font-medium">{average.toFixed(2)}</td>
-                                    </tr>
-                                )}
-                                {filteredNilai.length === 0 && (
-                                    <tr className="border-t">
-                                        <td colSpan={3} className="text-muted-foreground px-4 py-8 text-center">
-                                            Tidak ada data nilai untuk semester yang dipilih
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <DialogFooter>
-                    <div className="flex w-full items-center justify-between">
-                        <Button variant="outline">Kembali</Button>
-                        <Button asChild>
-                            {siswa && (
-                                <a href={route('nilai.transcript', siswa?.nis)} target="_blank">
-                                    <Printer className="mr-2 h-4 w-4" />
-                                    Cetak transkrip nilai
-                                </a>
-                            )}
-                        </Button>
-                    </div>
-                </DialogFooter>
+                        <DialogFooter>
+                            <div className="flex w-full items-center justify-end">
+                                <Button asChild>
+                                    <a href={route('nilai.transcript', siswaData.nis)} target="_blank" rel="noopener noreferrer">
+                                        <Printer className="mr-2 h-4 w-4" />
+                                        Cetak Transkrip Nilai
+                                    </a>
+                                </Button>
+                            </div>
+                        </DialogFooter>
+                    </>
+                )}
             </DialogContent>
         </Dialog>
     );

@@ -7,6 +7,7 @@ import { GuruPelajaranList } from '@/types/guru/pelajaran';
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import LessonViewGuru from './lesson-view-guru';
+import PresensiInputGuru from './presensi-input-guru';
 
 type Props = {
     siswaData: GuruPelajaranList;
@@ -53,7 +54,8 @@ export default function DataTablePelajaranGuru({ siswaData, filters }: Props) {
                         <TableRow className="bg-muted">
                             <TableHead>Nama Mata Pelajaran</TableHead>
                             <TableHead>Jumlah Siswa Didik</TableHead>
-                            <TableHead></TableHead>
+                            <TableHead>Nilai</TableHead>
+                            <TableHead>Presensi</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -65,6 +67,9 @@ export default function DataTablePelajaranGuru({ siswaData, filters }: Props) {
                                     <TableCell>{siswa.nilai.length}</TableCell>
                                     <TableCell>
                                         <LessonViewGuru pelajaran={siswa} />
+                                    </TableCell>
+                                    <TableCell>
+                                        <PresensiInputGuru pelajaran={siswa} />
                                     </TableCell>
                                     {/* <TableCell>
                                         <SiswaView />

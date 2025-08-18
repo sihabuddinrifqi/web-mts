@@ -13,5 +13,6 @@ Route::prefix('/guru')
             Route::get('/pelajaran', [GuruController::class, 'pelajaran'])->name('pelajaran');
             Route::get('/izin', [GuruController::class, 'izin'])->name('izin');
             Route::patch('/nilai/{nilai}', [NilaiController::class, 'update'])->name('nilai.update');
+            Route::post('/nilai', [NilaiController::class, 'store'])->name('nilai.store');
         }
     );

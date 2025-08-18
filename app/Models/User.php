@@ -127,4 +127,10 @@ class User extends Authenticatable
 
         return $username;
     }
+
+    public function presensis()
+{
+    return $this->hasMany(Presensi::class, 'guru_id');
+}
+
 }

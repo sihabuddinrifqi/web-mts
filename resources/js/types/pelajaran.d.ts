@@ -1,4 +1,4 @@
-import { Siswa, Guru } from './users';
+import { Siswa, Guru, } from './users';
 
 export type Nilai = {
     id: number;
@@ -10,6 +10,7 @@ export type Nilai = {
     siswa?: Siswa;
     created_at: string;
     updated_at: string;
+    detail?: NilaiDetail[]; 
 };
 
 export type Pelajaran = {
@@ -33,3 +34,11 @@ export type APINilai = {
     };
     nilai: Nilai[];
 };
+
+export interface NilaiDetail {
+    id?: number;
+    jenis: 'UH' | 'PTS' | 'PAS';
+    nilai: number;
+}
+
+

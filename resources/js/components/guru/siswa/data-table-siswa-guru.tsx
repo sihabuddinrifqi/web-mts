@@ -55,7 +55,7 @@ export default function DataTableSiswaGuru({ siswaData, filters }: Props) {
                             {/* <TableHead>No</TableHead> */}
                             <TableHead>NIS</TableHead>
                             <TableHead>Nama</TableHead>
-                            <TableHead>Email</TableHead>
+                            <TableHead>Presensi</TableHead>
                             <TableHead>Transkip Nilai</TableHead>
                             <TableHead></TableHead>
                             {/* <TableHead>Alamat</TableHead> */}

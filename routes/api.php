@@ -81,6 +81,8 @@ Route::prefix('/api')
                 })->name('pelajaran');
                 Route::get('/pelajaran/{pelajaran}/nilai', [PelajaranController::class, 'APINilai'])
                 ->name('pelajaran.nilai');
+                Route::get('/pelajaran/{pelajaran}/presensi', [PelajaranController::class, 'APIPresensi'])
+                ->name('pelajaran.presensi');
             }
         );
     }

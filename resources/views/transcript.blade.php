@@ -8,7 +8,7 @@
         /* Use a font that supports a wide range of characters */
         body {
             font-family: 'DejaVu Sans', 'Helvetica', 'Arial', sans-serif;
-            font-size: 12px;
+            font-size: 11px;
             line-height: 1.4;
         }
         /* Header table for logo and university details */
@@ -68,7 +68,7 @@
         }
         .grades-table th, .grades-table td {
             border: 1px solid black;
-            padding: 6px;
+            padding: 5px;
             text-align: left;
         }
         .grades-table th {
@@ -81,6 +81,7 @@
         .footer-row td {
             font-weight: bold;
             text-align: right;
+            background-color: #e9e9e9;
         }
     </style>
 </head>
@@ -118,23 +119,33 @@
                 <tr>
                     <th style="width: 5%;">No</th>
                     <th style="width: 35%;">Pelajaran</th>
-                    <th style="width: 45%;">Semester</th>
-                    <th style="width: 15%;">Nilai</th>
+                    <th style="width: 15%;">Semester</th>
+                    <th style="width: 10%;">UH</th>
+                    <th style="width: 10%;">PTS</th>
+                    <th style="width: 10%;">PAS</th>
+                    <th style="width: 15%;">Rata-Rata Nilai</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($subjects as $index => $subject)
+                @forelse($subjects as $index => $subject)
                 <tr>
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td>{{ $subject['name'] }}</td>
-                    <td>{{ $subject['semester'] }}</td>
-                    <td class="text-center">{{ $subject['score'] }}</td>
+                    <td class="text-center">{{ $subject['semester'] }}</td>
+                    <td class="text-center">{{ $subject['uh'] }}</td>
+                    <td class="text-center">{{ $subject['pts'] }}</td>
+                    <td class="text-center">{{ $subject['pas'] }}</td>
+                    <td class="text-center">{{ $subject['nilai_akhir'] }}</td>
                 </tr>
-                @endforeach
+                @empty
+                <tr>
+                    <td colspan="7" class="text-center">Belum ada data nilai.</td>
+                </tr>
+                @endforelse
             </tbody>
             <tfoot>
                 <tr class="footer-row">
-                    <td colspan="3">Rata - Rata</td>
+                    <td colspan="6">Rata-Rata Keseluruhan</td>
                     <td class="text-center">{{ $average }}</td>
                 </tr>
             </tfoot>

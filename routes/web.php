@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\PresensiController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -20,6 +21,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
     Route::get('/transcript/{nis}', [NilaiController::class, 'generatePDF'])
     ->name('nilai.transcript');
+    Route::resource('presensi', PresensiController::class);
+
 });
 
 require __DIR__.'/settings.php';

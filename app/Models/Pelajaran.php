@@ -56,4 +56,10 @@ class Pelajaran extends Model
         abort_if($result->isEmpty(), 404, 'No records found');
         return $result;
     }
+
+    public function presensis()
+{
+    return $this->hasMany(Presensi::class);
+}
+
 }

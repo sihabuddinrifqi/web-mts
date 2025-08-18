@@ -49,7 +49,7 @@ export default function SiswaViewGuruAdmin({ id }: { id: number }) {
                 }
             >
                 <DialogHeader className="border-b pb-4">
-                    <DialogTitle className="text-center">Daftar Siswa yang Diasuh</DialogTitle>
+                    <DialogTitle className="text-center">Daftar Siswa yang Diajar</DialogTitle>
                     <DialogDescription className="mx-auto max-w-sm text-center">
                         Menampilkan daftar siswa yang berada dalam bimbingan atau pengawasan guru tertentu.
                     </DialogDescription>
