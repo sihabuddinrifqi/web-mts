@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 // 1. Definisikan gambar-gambar Anda di sini
 const backgroundImages = [
   'background.jpg',
-  'background.jpg', 
-  'background.jpg',
+  'background1.jpg', 
+  'background2.jpg',
+  'background3.jpg',
 ];
 
 export default function Header() {

@@ -30,6 +30,13 @@ class GuruController extends Controller
         return Inertia::render('guru/pelajaran', [
             'prop' => $pelajaran
         ]);
+        $guru = auth()->user();
+    
+    $pelajaran = Pelajaran::where('guru_id', $guru->id)->get(); 
+
+    return Inertia::render('Guru/Pelajaran', [
+        'pelajaranData' => $pelajaran
+    ]);
     }
 
     public function izin(Request $request)

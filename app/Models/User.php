@@ -128,9 +128,9 @@ class User extends Authenticatable
         return $username;
     }
 
-    public function presensis()
+    public function presensi()
 {
-    return $this->hasMany(Presensi::class, 'guru_id');
+    return $this->hasMany(Presensi::class, 'siswa_id');
 }
 
 }

@@ -5,7 +5,7 @@ const beritaData = [
   {
     id: 1,
     judul: "Siswa MTs Ash-Sholihin Juara 1 Lomba Tahfidz Tingkat Provinsi",
-    foto: "/background.jpg",
+    foto: "/juara.jpg",
     tanggal: "15 Juli 2025",
     kategori: "Prestasi",
     slug: "juara-1-lomba-tahfidz" // Tambahkan slug untuk URL
@@ -13,7 +13,7 @@ const beritaData = [
   {
     id: 2,
     judul: "Kegiatan Pesantren Ramadan 1446 H di MTs Ash-Sholihin",
-    foto: "/background.jpg",
+    foto: "/ramadhan.jpg",
     tanggal: "28 Juni 2025",
     kategori: "Kegiatan",
     slug: "pesantren-ramadan-1446h"
@@ -21,7 +21,7 @@ const beritaData = [
   {
     id: 3,
     judul: "Penerimaan Siswa Baru Tahun Ajaran 2025/2026 Dibuka",
-    foto: "/background.jpg", // Pastikan path ke gambar lokal benar
+    foto: "/daftar.jpg", // Pastikan path ke gambar lokal benar
     tanggal: "1 Juni 2025",
     kategori: "Pengumuman",
     slug: "penerimaan-siswa-baru-2025"

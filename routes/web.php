@@ -21,8 +21,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
     Route::get('/transcript/{nis}', [NilaiController::class, 'generatePDF'])
     ->name('nilai.transcript');
-    Route::resource('presensi', PresensiController::class);
-
 });
 
 require __DIR__.'/settings.php';

@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { GuruSiswa } from '@/types/guru/siswa';
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import PresensiModal from "@/components/guru/presensi-modal";
 
 type Props = {
     siswaData: GuruSiswa;
@@ -55,14 +56,9 @@ export default function DataTableSiswaGuru({ siswaData, filters }: Props) {
                             {/* <TableHead>No</TableHead> */}
                             <TableHead>NIS</TableHead>
                             <TableHead>Nama</TableHead>
-                            <TableHead>Presensi</TableHead>
                             <TableHead>Transkip Nilai</TableHead>
-                            <TableHead></TableHead>
-                            {/* <TableHead>Alamat</TableHead> */}
-                            {/* <TableHead>Jenis Kelamin</TableHead>
-                            <TableHead>Nomor HP</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead>Nama Orang Tua</TableHead> */}
+                            <TableHead>Presensi</TableHead>
+                            <TableHead>Detail Siswa</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -72,9 +68,11 @@ export default function DataTableSiswaGuru({ siswaData, filters }: Props) {
                                     {/* <TableCell>{(siswaData.current_page - 1) * siswaData.per_page + index + 1}</TableCell> */}
                                     <TableCell>{siswa.nis}</TableCell>
                                     <TableCell>{siswa.name}</TableCell>
-                                    <TableCell>{siswa.email}</TableCell>
                                     <TableCell>
                                         <TranscriptViewAdmin id={siswa.id} />
+                                    </TableCell>
+                                    <TableCell>
+                                        <PresensiModal pelajaranId={siswa.id} />
                                     </TableCell>
                                     <TableCell>
                                         <SiswaDetail data={siswa} />

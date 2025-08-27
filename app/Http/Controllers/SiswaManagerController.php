@@ -6,7 +6,8 @@ use App\Http\Requests\Siswa\SiswaStoreRequest;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use illuminate\Support\Str;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule; // Pastikan Rule di-import
 
 class SiswaManagerController extends Controller
 {
@@ -39,7 +40,7 @@ class SiswaManagerController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Store a newly created resource in storage.
      */
     public function store(SiswaStoreRequest $request)
     {
@@ -54,23 +55,49 @@ class SiswaManagerController extends Controller
         return redirect(route('admin.siswa.index'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, Siswa $siswa)
-{
-    $validated = $request->validate([
-        'name'      => 'required|string|max:255',
-        'kelas'     => 'nullable|string|max:50',
-        'angkatan'  => 'required|string|max:10',
-        'alamat'    => 'nullable|string|max:255',
-    ]);
+    {
+        // GANTI BAGIAN VALIDASI INI DENGAN YANG LEBIH LENGKAP
+        $validated = $request->validate([
+            'name'          => 'required|string|max:255',
+            'nik'           => ['required', 'string', 'size:16', Rule::unique('users', 'nik')->ignore($siswa->id)],
+            'alamat'        => 'required|string',
+            'tempat_lahir'  => 'required|string',
+            'tanggal_lahir' => 'required|date',
+            'angkatan'      => 'required|integer',
+            'jenis_kelamin' => 'required|in:pria,wanita',
+            'siswa_role'    => 'required|in:regular,pengurus',
+            
+            // Validasi guru_id dengan benar
+            'guru_id' => [
+                'required',
+                'integer',
+                // Periksa tabel 'users' pada kolom 'id', DAN pastikan kolom 'role' adalah 'guru'
+                Rule::exists('users', 'id')->where(function ($query) {
+                    return $query->where('role', 'guru');
+                }),
+            ],
 
-    // cukup update sekali
-    $siswa->update($validated);
+            // Validasi ortu_id dengan benar
+            'ortu_id' => [
+                'required',
+                'integer',
+                // Periksa tabel 'users' pada kolom 'id', DAN pastikan kolom 'role' adalah 'walisiswa'
+                Rule::exists('users', 'id')->where(function ($query) {
+                    return $query->where('role', 'walisiswa');
+                }),
+            ],
+        ]);
 
-    return redirect()
-        ->route('admin.siswa.index')
-        ->with('success', 'Data siswa berhasil diperbarui');
-}
+        // Lakukan pembaruan data
+        $siswa->update($validated);
 
+        // Redirect kembali ke halaman sebelumnya
+        return redirect()->back()->with('success', 'Data siswa berhasil diperbarui.');
+    }
 
     /**
      * Remove the specified resource from storage.

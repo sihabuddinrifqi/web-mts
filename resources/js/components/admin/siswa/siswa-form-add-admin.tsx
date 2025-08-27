@@ -153,11 +153,22 @@ export default function SiswaFormAddAdmin() {
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="flex flex-col space-y-2">
                                 <label htmlFor="guru" className="font-medium">Wali Kelas</label>
-                                <Select value={data.guru_id.toString()} onValueChange={(value) => setData('guru_id', parseInt(value))} required>
-                                    <SelectTrigger><SelectValue placeholder="Cari dan pilih guru..." /></SelectTrigger>
+                                <Select 
+                                    // 1. Ubah ini: Jika guru_id belum dipilih (bukan angka > 0), anggap nilainya string kosong.
+                                    value={data.guru_id > 0 ? data.guru_id.toString() : ""} 
+                                    // 2. Ubah ini: Pastikan nilai yang dikembalikan selalu angka, atau -1 jika tidak valid.
+                                    onValueChange={(value) => setData('guru_id', parseInt(value) || -1)} 
+                                    required
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Cari dan pilih guru..." />
+                                    </SelectTrigger>
                                     <SelectContent>
+                                        {/* Bagian ini sudah benar */}
                                         {dataGuru.map((guru) => (
-                                            <SelectItem key={guru.id} value={guru.id.toString()}>{guru.name}</SelectItem>
+                                            <SelectItem key={guru.id} value={guru.id.toString()}>
+                                                {guru.name}
+                                            </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>

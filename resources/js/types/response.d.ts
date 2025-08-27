@@ -24,4 +24,5 @@ export interface APIResponse<T> {
     message: string;
     received: number;
     data: T;
+    success: boolean;
 }
