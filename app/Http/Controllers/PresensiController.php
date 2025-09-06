@@ -29,6 +29,22 @@ class PresensiController extends Controller
     ]);
 }
 
+public function getPresensiSiswa(Request $request, $siswa)
+    {
+        try {
+            $siswa = Siswa::with('presensi.pelajaran')->findOrFail($siswa);
+            return response()->json([
+                'success' => true,
+                'data' => $siswa,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data presensi: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
 
     /**
      * Form input presensi
@@ -152,7 +168,6 @@ public function storeApi(Request $request)
         'pelajaran_id' => 'required|integer|exists:pelajarans,id',
         'tanggal'      => 'required|date',
         'status'       => 'required|in:hadir,izin,sakit,alpha',
-        'keterangan'   => 'nullable|string',
     ]);
 
     // Menggunakan updateOrCreate untuk menangani data baru atau yang sudah ada
@@ -164,7 +179,6 @@ public function storeApi(Request $request)
         ],
         [
             'status'       => $validated['status'],
-            'keterangan'   => $validated['keterangan'],
             'guru_id'      => $validated['guru_id'],
         ]
     );

@@ -39,9 +39,10 @@ class Siswa extends User
         return $angkatan . $newNumber;
     }
 
-    public function presensis()
+    public function presensi()
 {
     return $this->hasMany(Presensi::class, 'siswa_id');
 }
 
 }
+

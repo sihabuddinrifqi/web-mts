@@ -2,10 +2,10 @@ import React from 'react';
 
 export default function PendaftaranSection() {
   return (
-    // 1. Hapus bg-emerald-700, pastikan 'relative' ada
-    <section className="relative overflow-hidden ">
+    // PERBAIKAN: Tambahkan 'mt-16' untuk memberi jarak atas
+    <section className="relative overflow-hidden mt-16">
       
-      {/* 2. Tambahkan <img> sebagai background dan overlay */}
+      {/* Latar belakang dan lapisan overlay */}
       <div className="absolute inset-0">
         <img
           src="/bgdaftar.png" // Pastikan gambar ada di folder /public/
@@ -13,10 +13,10 @@ export default function PendaftaranSection() {
           className="w-full h-full object-cover"
         />
         {/* Lapisan overlay gelap agar teks lebih kontras */}
-        <div className="absolute inset-0" />
+        <div className="absolute inset-0 bg-black opacity-20" />
       </div>
 
-      {/* Konten (tidak berubah, z-10 membuatnya tetap di depan) */}
+      {/* Konten (z-10 membuatnya tetap di depan) */}
       <div className="relative z-10 container mx-auto px-4 py-24 lg:py-32">
         <div className="flex flex-col lg:flex-row items-center justify-between">
           

@@ -32,7 +32,7 @@ interface SiswaWithPresensi extends Siswa {
   presensi?: Presensi[];
 }
 
-interface MonitorPresensiWaliProps {
+interface MonitorPresensiAdminProps {
   siswaId: number;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -53,7 +53,7 @@ const groupByPelajaran = (presensi: Presensi[]): Record<string, Presensi[]> => {
   }, {} as Record<string, Presensi[]>);
 };
 
-export default function MonitorPresensiWali({ siswaId, isOpen, onOpenChange }: MonitorPresensiWaliProps) {
+export default function MonitorPresensiAdmin({ siswaId, isOpen, onOpenChange }: MonitorPresensiAdminProps) {
   const [semester, setSemester] = useState<string>('Semua');
   const [siswaData, setSiswaData] = useState<SiswaWithPresensi | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -239,7 +239,7 @@ export default function MonitorPresensiWali({ siswaId, isOpen, onOpenChange }: M
           <div className="flex w-full items-center justify-end">
             <Button asChild disabled={!siswaData?.nis}>
               <a
-                href={siswaData?.nis ? '#' : '#'} // Ganti dengan rute 'presensi.report' setelah didefinisikan
+                href={siswaData?.nis ? '#' : '#'} // Ganti dengan rute yang valid setelah didefinisikan
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -271,4 +271,4 @@ export default function MonitorPresensiWali({ siswaId, isOpen, onOpenChange }: M
       </DialogContent>
     </Dialog>
   );
-} 
+}

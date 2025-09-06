@@ -17,6 +17,11 @@ class Presensi extends Model
         'status',
     ];
 
+    protected $casts = [
+        'status' => 'string',
+        'tanggal' => 'date',
+    ];
+
     /**
      * Relasi ke pelajaran
      */

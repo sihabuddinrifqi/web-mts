@@ -87,7 +87,7 @@ export default function Footer() {
                         <h3 className="text-xl font-semibold text-gray-800">Lokasi Kami</h3>
                         <div className="w-full h-96 rounded-lg overflow-hidden shadow-lg border-2 border-emerald-200">
                             <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.512683838271!2d109.8427906147752!3d-7.295796994733305!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e70090f0c0b7c7b%3A0x8e8e77c88b7709b!2sYAYASAN%20ASH-SHOLIHIN%20KEMIRI!5e0!3m2!1sen!2sid!4v1663161942898!5m2!1sen!2sid"
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10478.235429951164!2d109.88438250552959!3d-7.351050811467986!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7aa1f877e92079%3A0x8597970812393f53!2sYAYASAN%20ASH-SHOLIHIN%20KEMIRI!5e1!3m2!1sid!2sid!4v1757134651385!5m2!1sid!2sid"
                                 width="100%"
                                 height="100%"
                                 style={{ border: 0 }}

@@ -14,10 +14,11 @@ return new class extends Migration
     Schema::create('presensis', function (Blueprint $table) {
     $table->id();
     $table->foreignId('pelajaran_id')->constrained('pelajarans')->onDelete('cascade');
-    $table->foreignId('guru_id')->constrained('users')->onDelete('cascade'); // FIX
-    $table->foreignId('siswa_id')->constrained('users')->onDelete('cascade');
+    $table->foreignId('guru_id')->constrained('users')->onDelete('cascade');
+    $table->foreignId('siswa_id')->constrained('users')->onDelete('cascade'); // ubah 'users' ke 'siswas' jika perlu
     $table->date('tanggal');
-    $table->enum('status', ['Hadir', 'Sakit', 'Izin', 'Alfa'])->default('Hadir');
+    $table->enum('status', ['hadir','sakit','izin','alpha'])->default('hadir');
+    $table->string('keterangan')->nullable();
     $table->timestamps();
 });
 
