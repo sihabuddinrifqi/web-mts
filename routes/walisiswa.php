@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\WalisiswaController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PresensiViewController;
+use App\Http\Controllers\NilaiViewController;
 
 Route::prefix('/wali')
     ->middleware(['auth'])
@@ -27,4 +29,12 @@ Route::prefix('/wali')
         // BARU: Route untuk menghapus satu izin
         Route::delete('/izin/{izin}', [WalisiswaController::class, 'destroy_izin'])
                ->name('izin.destroy'); // wali.izin.destroy
+               
+        // Presensi routes
+        Route::get('/presensi', [PresensiViewController::class, 'walisiswa'])->name('presensi.index');
+        Route::get('/presensi/statistics', [PresensiViewController::class, 'statistics'])->name('presensi.statistics');
+        
+        // Nilai routes
+        Route::get('/nilai', [NilaiViewController::class, 'walisiswa'])->name('nilai.index');
+        Route::get('/nilai/statistics', [NilaiViewController::class, 'statistics'])->name('nilai.statistics');
     });

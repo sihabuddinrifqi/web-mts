@@ -4,6 +4,8 @@ use App\Http\Controllers\NilaiController;
 use App\Http\Controllers\GuruController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PresensiController;
+use App\Http\Controllers\PresensiViewController;
+use App\Http\Controllers\NilaiViewController;
 
 Route::prefix('/guru')
     ->name('guru.')
@@ -16,5 +18,13 @@ Route::prefix('/guru')
             Route::patch('/nilai/{nilai}', [NilaiController::class, 'update'])->name('nilai.update');
             Route::post('/nilai', [NilaiController::class, 'store'])->name('nilai.store');
             Route::patch('/presensi/{presensi}', [PresensiController::class, 'update'])->name('presensi.update');
+            
+            // Presensi routes
+            Route::get('/presensi', [PresensiViewController::class, 'guru'])->name('presensi.index');
+            Route::get('/presensi/statistics', [PresensiViewController::class, 'statistics'])->name('presensi.statistics');
+            
+            // Nilai routes
+            Route::get('/nilai', [NilaiViewController::class, 'guru'])->name('nilai.index');
+            Route::get('/nilai/statistics', [NilaiViewController::class, 'statistics'])->name('nilai.statistics');
         }
     );

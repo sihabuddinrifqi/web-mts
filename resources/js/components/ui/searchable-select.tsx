@@ -21,8 +21,6 @@ export function SearchableSelect({ options, placeholder, value, onChange, requir
     const [filteredOptions, setFilteredOptions] = useState(options);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    const [selected, setSelected] = useState<Set<number>>(new Set())
-
     const selectedOption = options.find((opt) => opt.id === value);
 
     useEffect(() => {
@@ -42,10 +40,8 @@ export function SearchableSelect({ options, placeholder, value, onChange, requir
 
     const handleSelect = (option: { id: number; name: string }) => {
         onChange(option.id);
-        // setIsOpen(false);
+        setIsOpen(false);
         setSearchTerm('');
-        if (selected.has(option.id)) selected.delete(option.id)
-        else selected.add(option.id)
     };
 
     return (
