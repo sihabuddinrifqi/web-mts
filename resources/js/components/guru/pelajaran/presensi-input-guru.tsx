@@ -75,8 +75,11 @@ export default function PresensiInputGuru({ pelajaran }: { pelajaran: Pelajaran 
     );
 
     const saveAttendance = async (student: PresensiState, newStatus: 'hadir' | 'sakit' | 'izin' | 'alpha') => {
-        const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content;
-        if (!csrfToken) { setError('CSRF token tidak ditemukan.'); return false; }
+        let csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content;
+        if (!csrfToken) { 
+            setError('CSRF token tidak ditemukan.'); 
+            return false; 
+        }
 
         const payload = {
             siswa_id: student.siswa.id,
@@ -97,7 +100,48 @@ export default function PresensiInputGuru({ pelajaran }: { pelajaran: Pelajaran 
             if (!response.ok) {
                 const text = await response.text();
                 let message = 'Gagal menyimpan data.';
-                try { message = JSON.parse(text).message || message; } catch { message = text; }
+                try { 
+                    const errorData = JSON.parse(text);
+                    message = errorData.message || message;
+                    
+                    // Handle CSRF token mismatch
+                    if (response.status === 419 || message.includes('CSRF')) {
+                        // Try to refresh CSRF token and retry once
+                        try {
+                            const refreshResponse = await fetch('/api/csrf-token', {
+                                method: 'GET',
+                                credentials: 'same-origin',
+                            });
+                            
+                            if (refreshResponse.ok) {
+                                const refreshData = await refreshResponse.json();
+                                csrfToken = refreshData.csrf_token;
+                                
+                                // Update meta tag
+                                const meta = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement;
+                                if (meta) {
+                                    meta.content = csrfToken;
+                                }
+                                
+                                // Retry the request
+                                const retryResponse = await fetch(route('api.guru.presensi.store'), {
+                                    method: 'POST',
+                                    credentials: 'same-origin',
+                                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                                    body: JSON.stringify(payload),
+                                });
+                                
+                                if (retryResponse.ok) {
+                                    const retryResult: APIResponse<PresensiState> = await retryResponse.json();
+                                    setPresensiList(currentList => currentList.map(p => p.siswa.id === retryResult.data.siswa.id ? retryResult.data : p));
+                                    return true;
+                                }
+                            }
+                        } catch (refreshError) {
+                            console.error('Failed to refresh CSRF token:', refreshError);
+                        }
+                    }
+                } catch { message = text; }
                 throw new Error(message);
             }
 

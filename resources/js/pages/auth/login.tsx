@@ -70,7 +70,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
             <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none">
                 <svg 
                     xmlns="http://www.w3.org/2000/svg" 
-                    viewBox="0 0 1440 120"
+                    viewBox="0 0 1440 100"
                     className="relative block w-full h-[90px] sm:h-[120px]"
                 >
                     <path 
@@ -87,7 +87,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
             <div className="relative z-10 container mx-auto flex flex-col lg:flex-row items-center justify-center lg:justify-between p-9">
                 
                 {/* Sisi Kiri - Teks Ajakan dengan Shadow yang Lebih Jelas */}
-                <div className="hidden lg:block lg:w-1/2 text-white pr-12">
+                <div className="ml-9 hidden lg:block lg:w-1/2 text-white pr-12">
                     {/* 👇 2. SHADOW DITINGKATKAN MENJADI 'drop-shadow-lg' 👇 */}
                     <h1 className="text-5xl xl:text-6xl font-bold leading-tight drop-shadow-lg">
                         Sistem Informasi MTs Ash-Sholihin

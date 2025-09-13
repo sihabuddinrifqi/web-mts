@@ -8,6 +8,7 @@ use App\Http\Controllers\GuruManagerController;
 use App\Http\Controllers\WalisiswaController;
 use App\Http\Controllers\WaliSiswaManagerController;
 use App\Http\Controllers\PresensiController;
+use App\Http\Controllers\CsrfController;
 use App\Models\Izin;
 use App\Models\Pelajaran;
 use App\Models\Siswa;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('/api')
     ->name('api.')
-    ->middleware(['auth'])
+    ->middleware(['auth', 'web'])
     ->group(function () {
 
         // === API List Data ===
@@ -26,6 +27,9 @@ Route::prefix('/api')
         Route::get('/siswa', [SiswaManagerController::class, 'api'])->name('siswa');
         Route::get('/siswa/{angkatan}', [SiswaManagerController::class, 'angkatan'])->name('siswa.angkatan');
         Route::get('/pelajaran', [PelajaranManagerController::class, 'api'])->name('pelajaran');
+
+        // === CSRF Token ===
+        Route::get('/csrf-token', [CsrfController::class, 'getToken'])->name('csrf.token');
 
         // === Nilai & Presensi ===
         Route::get('/nilai/siswa/{siswa}', [NilaiController::class, 'APIsiswa'])->name('nilai.siswa');

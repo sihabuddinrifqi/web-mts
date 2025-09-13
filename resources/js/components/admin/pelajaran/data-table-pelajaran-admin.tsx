@@ -68,7 +68,7 @@ export default function DataTablePelajaranSiswaAdmin({ siswaData, filters }: Pro
                                     <TableCell>{pelajaran.nama_pelajaran}</TableCell>
                                     <TableCell>{pelajaran.pengampu?.name}</TableCell>
                                     <TableCell>{pelajaran.semester}</TableCell>
-                                    <TableCell>{pelajaran.siswa_count + 1}</TableCell> 
+                                    <TableCell>{pelajaran.siswa_count}</TableCell> 
                                     <TableCell>
                                         <PelajaranActionAdmin id={pelajaran.id} />
                                     </TableCell>

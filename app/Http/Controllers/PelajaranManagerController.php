@@ -15,7 +15,7 @@ class PelajaranManagerController extends Controller
     {
         // Ambil data pelajaran dengan relasi pengampu dan hitung jumlah siswa
         $query = Pelajaran::with('pengampu')
-                          ->withCount('siswa');
+                          ->withCount('siswa as siswa_count');
 
         // Terapkan pencarian dan paginasi
         $prop = $this->applySearchAndPaginate($query, $request, ['nama_pelajaran']);
@@ -27,7 +27,7 @@ class PelajaranManagerController extends Controller
 
     public function api(Request $request)
     {
-        $query = Pelajaran::with('pengampu')->withCount('siswa');
+        $query = Pelajaran::with('pengampu')->withCount('siswa as siswa_count');
         $data = $this->applySearchAndPaginate($query, $request, ['nama_pelajaran']);
         return response()->json($data);
     }

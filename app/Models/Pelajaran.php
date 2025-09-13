@@ -14,15 +14,15 @@ class Pelajaran extends Model
     protected $fillable = ['nama_pelajaran', 'semester', 'pengampu_id'];
 
     public function siswa()
-{
-    // Pastikan nama tabel pivot benar ('nilai') dan kolom foreign key sesuai
-    return $this->belongsToMany(
-        User::class,       // Model Siswa, bisa juga App\Models\Siswa jika ada
-        'nilais',           // Tabel pivot
-        'pelajaran_id',    // FK di tabel pivot yang mengacu ke pelajaran
-        'siswa_id'         // FK di tabel pivot yang mengacu ke siswa
-    );
-}
+    {
+        // Relasi many-to-many melalui tabel nilai untuk mendapatkan siswa unik yang terdaftar di pelajaran ini
+        return $this->belongsToMany(
+            Siswa::class,   // Model target (Siswa)
+            'nilais',       // Tabel pivot (nilais)
+            'pelajaran_id', // Foreign key di tabel pivot yang mengacu ke pelajaran
+            'siswa_id'      // Foreign key di tabel pivot yang mengacu ke siswa
+        );
+    }
 
 
     public function pengampu() // Guru who teaches

@@ -105,11 +105,15 @@ export function SearchableMultiSelect({ options, placeholder, value, onChange, r
     const [filteredOptions, setFilteredOptions] = useState(options);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    const [selected, setSelected] = useState<Set<number>>(new Set())
+    const [selected, setSelected] = useState<Set<number>>(new Set(value || []))
 
     useEffect(() => {
         setFilteredOptions(options.filter((option) => option.name.toLowerCase().includes(searchTerm.toLowerCase())));
     }, [searchTerm, options]);
+
+    useEffect(() => {
+        setSelected(new Set(value || []));
+    }, [value]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -122,12 +126,12 @@ export function SearchableMultiSelect({ options, placeholder, value, onChange, r
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
     const handleSelect = (option: { id: number; name: string }) => {
-        onChange([...selected]);
-        // setIsOpen(false);
-        setSearchTerm('');
         if (selected.has(option.id)) selected.delete(option.id)
         else selected.add(option.id)
         setSelected(selected)
+        onChange([...selected]);
+        // setIsOpen(false);
+        setSearchTerm('');
     };
 
     return (

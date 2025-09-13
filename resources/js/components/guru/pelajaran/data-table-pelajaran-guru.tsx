@@ -64,7 +64,7 @@ export default function DataTablePelajaranGuru({ siswaData, filters }: Props) {
                                 <TableRow key={siswa.id}>
                                     {/* <TableCell>{(siswaData.current_page - 1) * siswaData.per_page + index + 1}</TableCell> */}
                                     <TableCell>{siswa.nama_pelajaran}</TableCell>
-                                    <TableCell>{siswa.nilai.length}</TableCell>
+                                    <TableCell>{siswa.siswa_count || siswa.nilai.length}</TableCell>
                                     <TableCell>
                                         <LessonViewGuru pelajaran={siswa} />
                                     </TableCell>

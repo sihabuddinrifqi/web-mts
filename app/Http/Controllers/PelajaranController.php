@@ -29,10 +29,10 @@ class PelajaranController extends Controller
         );
     }
 
-    public function APIPresensi(Request $request, Pelajaran $pelajaran)
+    public function APIPresensi(Request $request, Pelajaran $pelajaran, $tanggal = null)
 {
-    // Ambil tanggal dari request, default ke hari ini jika tidak ada
-    $tanggal = $request->input('tanggal', now()->format('Y-m-d'));
+    // Ambil tanggal dari parameter route, default ke hari ini jika tidak ada
+    $tanggal = $tanggal ?: now()->format('Y-m-d');
 
     // Ambil data siswa yang terdaftar di pelajaran ini
     // beserta data presensi mereka pada tanggal yang spesifik
