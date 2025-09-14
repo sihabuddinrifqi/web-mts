@@ -2,13 +2,13 @@
 
 import { SiswaDetail } from '@/components/admin/siswa/siswa-detail';
 import TranscriptViewAdmin from '@/components/admin/siswa/transcript-view-admin';
+import MonitorPresensiGuru from '@/components/guru/presensi-view-guru';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { GuruSiswa } from '@/types/guru/siswa';
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import PresensiModal from "@/components/guru/presensi-modal";
 
 type Props = {
     siswaData: GuruSiswa;
@@ -21,6 +21,15 @@ type Props = {
 export default function DataTableSiswaGuru({ siswaData, filters }: Props) {
     const { url } = usePage();
     const [searchInput, setSearchInput] = useState(filters.search || '');
+    const [openPresensiDialogId, setOpenPresensiDialogId] = useState<number | null>(null);
+
+    const handleOpenPresensiDialog = (siswaId: number) => {
+        setOpenPresensiDialogId(siswaId);
+    };
+
+    const handleClosePresensiDialog = () => {
+        setOpenPresensiDialogId(null);
+    };
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -50,7 +59,7 @@ export default function DataTableSiswaGuru({ siswaData, filters }: Props) {
 
             {/* Table */}
             <div className="w-full overflow-x-auto rounded-lg border">
-                <Table className="min-w-[900px]">
+                <Table className="min-w-[700px]">
                     <TableHeader>
                         <TableRow className="bg-muted">
                             {/* <TableHead>No</TableHead> */}
@@ -72,7 +81,14 @@ export default function DataTableSiswaGuru({ siswaData, filters }: Props) {
                                         <TranscriptViewAdmin id={siswa.id} />
                                     </TableCell>
                                     <TableCell>
-                                        <PresensiModal pelajaranId={siswa.id} />
+                                        <MonitorPresensiGuru
+                                            siswaId={siswa.id}
+                                            isOpen={openPresensiDialogId === siswa.id}
+                                            onOpenChange={(open) => {
+                                                if (!open) handleClosePresensiDialog();
+                                                else handleOpenPresensiDialog(siswa.id);
+                                            }}
+                                        />
                                     </TableCell>
                                     <TableCell>
                                         <SiswaDetail data={siswa} />

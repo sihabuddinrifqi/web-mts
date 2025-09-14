@@ -32,7 +32,7 @@ interface SiswaWithPresensi extends Siswa {
   presensi?: Presensi[];
 }
 
-interface MonitorPresensiAdminProps {
+interface MonitorPresensiGuruProps {
   siswaId: number;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -53,7 +53,7 @@ const groupByPelajaran = (presensi: Presensi[]): Record<string, Presensi[]> => {
   }, {} as Record<string, Presensi[]>);
 };
 
-export default function MonitorPresensiAdmin({ siswaId, isOpen, onOpenChange }: MonitorPresensiAdminProps) {
+export default function MonitorPresensiGuru({ siswaId, isOpen, onOpenChange }: MonitorPresensiGuruProps) {
   const [semester, setSemester] = useState<string>('Semua');
   const [siswaData, setSiswaData] = useState<SiswaWithPresensi | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -192,8 +192,8 @@ export default function MonitorPresensiAdmin({ siswaId, isOpen, onOpenChange }: 
                 <div className="font-semibold">{siswaData.name}</div>
               </div>
               <div className="space-y-1">
-                <div className="text-sm text-muted-foreground">Angkatan</div>
-                <div className="font-semibold">{siswaData.angkatan}</div>
+                <div className="text-sm text-muted-foreground">NIS</div>
+                <div className="font-semibold">{siswaData.nis}</div>
               </div>
             </div>
             <div className="w-full sm:w-48">
@@ -269,7 +269,7 @@ export default function MonitorPresensiAdmin({ siswaId, isOpen, onOpenChange }: 
           <div className="flex w-full items-center justify-end">
             <Button asChild disabled={!siswaData?.nis}>
               <a
-                href={route('presensi.pdf', siswaData.nis)} // Ganti dengan rute yang valid setelah didefinisikan
+                href={siswaData?.nis ? route('presensi.pdf.siswa', { nis: siswaData.nis }) : '#'}
                 target="_blank"
                 rel="noopener noreferrer"
               >

@@ -6,15 +6,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, Download, Calendar } from 'lucide-react';
+import { Search, Filter, Download, Calendar, Printer } from 'lucide-react';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
-interface Presensi {
+interface PresensiData {
     id: number;
     tanggal: string;
     status: 'hadir' | 'sakit' | 'izin' | 'alpha';
     keterangan?: string;
+}
+
+interface Presensi {
     siswa: {
         id: number;
         name: string;
@@ -28,6 +31,12 @@ interface Presensi {
         id: number;
         name: string;
     };
+    presensi_data: PresensiData[];
+    total_hadir: number;
+    total_sakit: number;
+    total_izin: number;
+    total_alpha: number;
+    total_presensi: number;
 }
 
 interface Pelajaran {
@@ -101,14 +110,28 @@ export default function AdminPresensiPage({ presensi, pelajaran, filters }: Admi
         <>
             <Head title="Data Presensi" />
             <div className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Data Presensi</h1>
+                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Data Presensi</h1>
                         <p className="text-muted-foreground">
                             Kelola dan pantau data presensi siswa
                         </p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
+                        <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                                const params = new URLSearchParams();
+                                if (pelajaranFilter) params.append('pelajaran_id', pelajaranFilter);
+                                if (tanggalFilter) params.append('tanggal', tanggalFilter);
+                                if (statusFilter) params.append('status', statusFilter);
+                                window.open(route('presensi.pdf') + '?' + params.toString(), '_blank');
+                            }}
+                        >
+                            <Printer className="mr-2 h-4 w-4" />
+                            Cetak Laporan Presensi
+                        </Button>
                         <Button variant="outline" size="sm">
                             <Download className="mr-2 h-4 w-4" />
                             Export
@@ -128,7 +151,7 @@ export default function AdminPresensiPage({ presensi, pelajaran, filters }: Admi
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Cari Siswa</label>
                                 <div className="relative">
@@ -202,47 +225,66 @@ export default function AdminPresensiPage({ presensi, pelajaran, filters }: Admi
                 {/* Data Table */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Data Presensi</CardTitle>
+                        <CardTitle>Data Presensi Siswa per Mata Pelajaran</CardTitle>
                         <CardDescription>
                             Menampilkan {presensi.data.length} dari {presensi.meta.total} data presensi
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="rounded-md border">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Tanggal</TableHead>
-                                        <TableHead>NIS</TableHead>
-                                        <TableHead>Nama Siswa</TableHead>
-                                        <TableHead>Mata Pelajaran</TableHead>
-                                        <TableHead>Guru</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Keterangan</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {presensi.data.map((presensi) => (
-                                        <TableRow key={presensi.id}>
-                                            <TableCell className="font-medium">
-                                                {formatDate(presensi.tanggal)}
-                                            </TableCell>
-                                            <TableCell>{presensi.siswa.nis}</TableCell>
-                                            <TableCell className="font-medium">
-                                                {presensi.siswa.name}
-                                            </TableCell>
-                                            <TableCell>{presensi.pelajaran.nama_pelajaran}</TableCell>
-                                            <TableCell>{presensi.guru.name}</TableCell>
-                                            <TableCell>
-                                                {getStatusBadge(presensi.status)}
-                                            </TableCell>
-                                            <TableCell>
-                                                {presensi.keterangan || '-'}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                        <div className="space-y-4">
+                            {presensi.data.map((presensi, index) => (
+                                <div key={index} className="rounded-md border p-4">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h3 className="text-lg font-semibold">{presensi.siswa.name}</h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                NIS: {presensi.siswa.nis} | {presensi.pelajaran.nama_pelajaran} | Guru: {presensi.guru.name}
+                                            </p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Badge variant="default" className="bg-green-500">
+                                                Hadir: {presensi.total_hadir}
+                                            </Badge>
+                                            <Badge variant="secondary">
+                                                Sakit: {presensi.total_sakit}
+                                            </Badge>
+                                            <Badge variant="outline">
+                                                Izin: {presensi.total_izin}
+                                            </Badge>
+                                            <Badge variant="destructive">
+                                                Alpha: {presensi.total_alpha}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="overflow-x-auto">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Tanggal</TableHead>
+                                                    <TableHead>Status</TableHead>
+                                                    <TableHead>Keterangan</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {presensi.presensi_data.map((data) => (
+                                                    <TableRow key={data.id}>
+                                                        <TableCell className="font-medium">
+                                                            {formatDate(data.tanggal)}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {getStatusBadge(data.status)}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {data.keterangan || '-'}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         {/* Pagination */}

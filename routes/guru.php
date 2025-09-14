@@ -22,6 +22,7 @@ Route::prefix('/guru')
             // Presensi routes
             Route::get('/presensi', [PresensiViewController::class, 'guru'])->name('presensi.index');
             Route::get('/presensi/statistics', [PresensiViewController::class, 'statistics'])->name('presensi.statistics');
+            Route::get('/presensi/modal-data', [PresensiViewController::class, 'modalData'])->name('presensi.modal-data');
             
             // Nilai routes
             Route::get('/nilai', [NilaiViewController::class, 'guru'])->name('nilai.index');

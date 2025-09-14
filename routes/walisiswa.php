@@ -11,6 +11,9 @@ Route::prefix('/wali')
     ->group(function () {
         Route::get('/anak', [WalisiswaController::class, 'index'])
             ->name('anak'); // wali.anak
+        
+        Route::get('/anak/api', [WalisiswaController::class, 'APIanak'])
+            ->name('anak.api');
 
         // --- Route Grup untuk Izin ---
         Route::get('/izin', [WalisiswaController::class, 'izin'])
@@ -21,6 +24,9 @@ Route::prefix('/wali')
              
         Route::post('/izin', [WalisiswaController::class, 'store_izin'])
              ->name('izin.store'); // wali.izin.store (Menyimpan data baru)
+             
+        Route::post('/izin/create', [WalisiswaController::class, 'create_izin'])
+             ->name('izin.create.post'); // wali.izin.create.post (Menyimpan data baru via form)
 
         // BARU: Route untuk menampilkan detail satu izin
         Route::get('/izin/{izin}', [WalisiswaController::class, 'show_izin'])
@@ -33,6 +39,7 @@ Route::prefix('/wali')
         // Presensi routes
         Route::get('/presensi', [PresensiViewController::class, 'walisiswa'])->name('presensi.index');
         Route::get('/presensi/statistics', [PresensiViewController::class, 'statistics'])->name('presensi.statistics');
+        Route::get('/presensi/modal-data', [PresensiViewController::class, 'modalData'])->name('presensi.modal-data');
         
         // Nilai routes
         Route::get('/nilai', [NilaiViewController::class, 'walisiswa'])->name('nilai.index');

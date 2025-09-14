@@ -4,7 +4,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 // import { NavFooter } from '@/components/nav-footer';
-import { BookOpenTextIcon, FileText, GraduationCap, HeartHandshake, LayoutGrid, Users2 } from 'lucide-react';
+import { BookOpenTextIcon, FileText, GraduationCap, HeartHandshake, LayoutGrid, Users2, CalendarCheck, BookOpen } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export const mainNavItems: NavItem[] = [
@@ -47,7 +47,6 @@ export const mainNavItems: NavItem[] = [
         icon: FileText,
         role_access: ['admin'],
     },
-
     // guru
     {
         title: 'Data Siswa Didik',
@@ -68,6 +67,7 @@ export const mainNavItems: NavItem[] = [
         role_access: ['guru'],
     },
 
+
     // wali siswa
     {
         title: 'Data Anak',
@@ -81,6 +81,7 @@ export const mainNavItems: NavItem[] = [
         icon: BookOpenTextIcon,
         role_access: ['walisiswa'],
     },
+
 ];
 
 // const footerNavItems: NavItem[] = [

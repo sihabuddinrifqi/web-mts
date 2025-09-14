@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -15,11 +14,10 @@ use Parental\HasChildren;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasChildren;
 
     /**
-     * The attributes that are mass assignable.
+     * Kolom yang bisa diisi (mass assignable).
      *
      * @var list<string>
      */
@@ -30,18 +28,24 @@ class User extends Authenticatable
         'phone',
         'username',
         'role',
-        'first_password'
-    ];
-    protected $childColumn = 'role';
-    protected $childTypes = [
-        'guru' => Guru::class,
-        'siswa' => Siswa::class,
-        'walisiswa' => WaliSiswa::class,
-        'admin' => Admin::class
+        'first_password',
+        'ortu_id', // penting untuk relasi wali-anak
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Konfigurasi inheritance untuk role anak class.
+     */
+    protected $childColumn = 'role';
+
+    protected $childTypes = [
+        'guru'      => Guru::class,
+        'siswa'     => Siswa::class,
+        'walisiswa' => WaliSiswa::class,
+        'admin'     => Admin::class,
+    ];
+
+    /**
+     * Kolom yang disembunyikan saat serialisasi.
      *
      * @var list<string>
      */
@@ -51,7 +55,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Konversi otomatis tipe data kolom.
      *
      * @return array<string, string>
      */
@@ -59,25 +63,50 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
     }
 
+    // ==========================
+    // Relasi
+    // ==========================
+
     /**
-     * Custom login method to authenticate user using phone number and password.
-     *
-     * @param string $phone
-     * @param string $password
-     * @return bool
+     * Relasi ke presensi (jika user adalah siswa).
+     */
+    public function presensi()
+    {
+        return $this->hasMany(Presensi::class, 'siswa_id');
+    }
+
+    /**
+     * Relasi ke anak-anak (jika user adalah wali).
+     */
+    public function anak()
+    {
+        return $this->hasMany(User::class, 'ortu_id');
+    }
+
+    /**
+     * Relasi ke wali (jika user adalah siswa).
+     */
+    public function wali()
+    {
+        return $this->belongsTo(User::class, 'ortu_id');
+    }
+
+    // ==========================
+    // Custom Methods
+    // ==========================
+
+    /**
+     * Custom login method pakai nomor HP.
      */
     public static function loginWithPhone(string $phone, string $password): bool
     {
-        // Attempt to locate the user by phone number.
         $user = self::where('phone', $phone)->first();
 
-        // Check if user exists and the password is correct.
         if ($user && Hash::check($password, $user->password)) {
-            // Log the user in using Laravel's Auth facade.
             Auth::login($user);
             return true;
         }
@@ -85,41 +114,44 @@ class User extends Authenticatable
         return false;
     }
 
+    /**
+     * Pagination dengan pencarian fleksibel.
+     */
     public static function paginateWithSearch(
         Request $request,
         array $searchable = ['name'],
         array $relations = [],
     ): LengthAwarePaginator {
-        $page = $request->query('page', 1);
-        $limit = $request->query('limit', 10);
+        $page   = $request->query('page', 1);
+        $limit  = $request->query('limit', 10);
         $search = $request->query('search', '');
+
         $query = static::query()->with($relations);
+
         if ($search && !empty($searchable)) {
-            $query->where(function($q) use ($search, $searchable) {
+            $query->where(function ($q) use ($search, $searchable) {
                 foreach ($searchable as $field) {
                     $q->orWhere($field, 'like', "%{$search}%");
                 }
             });
         }
+
         $result = $query->paginate($limit, ['*'], 'page', $page);
+
         abort_if($result->isEmpty(), 404, 'No records found');
+
         return $result;
     }
+
     /**
-     * Generate unique username for any user type.
-     *
-     * @param string $name
-     * @param string $role
-     * @return string
+     * Generate username unik berdasarkan nama depan.
      */
     public static function generateUsername(string $name, string $role): string
     {
-        // Ambil nama depan, lowercase
-        $base = Str::lower(explode(' ', $name)[0]);
+        $base     = Str::lower(explode(' ', $name)[0]);
         $username = $base;
-        $counter = 1;
+        $counter  = 1;
 
-        // Pastikan username unik
         while (self::where('username', $username)->exists()) {
             $username = $base . $counter;
             $counter++;
@@ -127,10 +159,4 @@ class User extends Authenticatable
 
         return $username;
     }
-
-    public function presensi()
-{
-    return $this->hasMany(Presensi::class, 'siswa_id');
-}
-
 }

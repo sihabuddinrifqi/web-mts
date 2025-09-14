@@ -19,14 +19,16 @@ export default function Page({ prop }: { prop: APIPaginateResponse<Izin> }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Data Permohonan Izin Siswa" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <div className="flex items-start justify-between">
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-2 sm:p-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <Heading
                         title="Data Permohonan Izin Siswa"
                         description="Berisi informasi izin siswa yang diajukan oleh orang tua atau wali, termasuk alasan, durasi, dan status izin."
                     />
 
-                    <IzinFormAddWali />
+                    <div className="flex justify-end">
+                        <IzinFormAddWali />
+                    </div>
                 </div>
                 <Separator />
                 <DataTableIzinWali siswaData={prop} filters={{ search: '', page: 1 }} />

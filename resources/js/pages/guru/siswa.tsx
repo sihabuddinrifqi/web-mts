@@ -17,8 +17,8 @@ export default function Page({ prop }: { prop: GuruSiswa }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Data Siswa yang Diasuh" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <div className="flex items-start justify-between">
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-2 sm:p-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <Heading
                         title="Data Siswa yang Diasuh"
                         description="Menampilkan daftar siswa yang berada dalam bimbingan atau pengawasan guru. "

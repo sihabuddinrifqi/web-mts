@@ -21,6 +21,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
     Route::get('/transcript/{nis}', [NilaiController::class, 'generatePDF'])
     ->name('nilai.transcript');
+    Route::get('/presensi/pdf', [PresensiController::class, 'generatePDF'])
+    ->name('presensi.pdf');
+    Route::get('/presensi/pdf/{pelajaran}', [PresensiController::class, 'generatePDF'])
+    ->name('presensi.pdf.pelajaran');
+    Route::get('/presensi/pdf-siswa/{nis}', [PresensiController::class, 'generatePDFByNIS'])
+    ->name('presensi.pdf.siswa');
 });
 
 require __DIR__.'/settings.php';

@@ -10,6 +10,10 @@ use Inertia\Inertia;
 
 class NilaiViewController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
     /**
      * Display nilai for admin
      */

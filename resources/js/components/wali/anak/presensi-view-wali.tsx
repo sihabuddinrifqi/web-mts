@@ -23,7 +23,7 @@ interface Presensi {
     id: number;
     nama_pelajaran: string;
   };
-  status: 'Hadir' | 'Sakit' | 'Izin' | 'Alpa';
+  status: 'hadir' | 'sakit' | 'izin' | 'alpha';
   tanggal: string;
   semester: string;
 }
@@ -39,7 +39,7 @@ interface MonitorPresensiWaliProps {
 }
 
 // --- Fungsi Bantuan ---
-const countStatus = (presensi: Presensi[] | undefined, status: 'Hadir' | 'Sakit' | 'Izin' | 'Alpa'): number => {
+const countStatus = (presensi: Presensi[] | undefined, status: 'hadir' | 'sakit' | 'izin' | 'alpha'): number => {
   if (!presensi) return 0;
   return presensi.filter((p) => p.status === status).length;
 };
@@ -65,25 +65,18 @@ export default function MonitorPresensiWali({ siswaId, isOpen, onOpenChange }: M
       setIsLoading(true);
       setError(null);
 
-      const token = localStorage.getItem('token') || '';
-      if (!token) {
-        setError('Token autentikasi tidak ditemukan. Silakan login ulang.');
-        setIsLoading(false);
-        return;
-      }
-
       console.log('Mengambil data presensi untuk siswa ID:', siswaId);
       console.log('URL:', route('api.presensi.siswa', { siswa: siswaId }));
-      console.log('Token:', token);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // Timeout 5 detik
 
       fetch(route('api.presensi.siswa', { siswa: siswaId }), {
         signal: controller.signal,
+        credentials: 'same-origin',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
       })
         .then((response) => {
@@ -142,6 +135,32 @@ export default function MonitorPresensiWali({ siswaId, isOpen, onOpenChange }: M
   // Kelompokkan presensi berdasarkan pelajaran
   const groupedPresensi = useMemo(() => groupByPelajaran(filteredPresensi), [filteredPresensi]);
 
+  // Get unique dates from all presensi data
+  const getAllDates = () => {
+    const dates = new Set<string>();
+    filteredPresensi.forEach(presensi => {
+      dates.add(presensi.tanggal);
+    });
+    return Array.from(dates).sort();
+  };
+
+  const allDates = getAllDates();
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: '2-digit',
+    });
+  };
+
+  // Get presensi for specific date and pelajaran
+  const getPresensiForDate = (pelajaran: string, tanggal: string) => {
+    return filteredPresensi.find(p => 
+      p.pelajaran.nama_pelajaran === pelajaran && p.tanggal === tanggal
+    );
+  };
+
   // Render konten dialog
   const renderContent = () => {
     if (isLoading) {
@@ -194,38 +213,49 @@ export default function MonitorPresensiWali({ siswaId, isOpen, onOpenChange }: M
           </div>
 
           {/* Tabel Presensi */}
-          <div className="overflow-hidden rounded-md border">
+          <div className="overflow-x-auto rounded-md border">
             <table className="w-full text-sm">
               <thead className="bg-muted">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Mata Pelajaran</th>
-                  <th className="w-20 px-4 py-3 text-center font-medium">Hadir</th>
-                  <th className="w-20 px-4 py-3 text-center font-medium">Sakit</th>
-                  <th className="w-20 px-4 py-3 text-center font-medium">Izin</th>
-                  <th className="w-20 px-4 py-3 text-center font-medium">Alpa</th>
+                  {allDates.map((tanggal) => (
+                    <th key={tanggal} className="px-2 py-3 text-center font-medium min-w-16">
+                      {formatDate(tanggal)}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {Object.keys(groupedPresensi).length > 0 ? (
-                  Object.keys(groupedPresensi).map((pelajaran, index) => {
-                    const presensiPelajaran = groupedPresensi[pelajaran];
-                    const hadir = countStatus(presensiPelajaran, 'Hadir');
-                    const sakit = countStatus(presensiPelajaran, 'Sakit');
-                    const izin = countStatus(presensiPelajaran, 'Izin');
-                    const alpa = countStatus(presensiPelajaran, 'Alpa');
-                    return (
-                      <tr key={`${pelajaran}-${index}`} className="border-t">
-                        <td className="px-4 py-2">{pelajaran}</td>
-                        <td className="px-4 py-2 text-center">{hadir || '-'}</td>
-                        <td className="px-4 py-2 text-center">{sakit || '-'}</td>
-                        <td className="px-4 py-2 text-center">{izin || '-'}</td>
-                        <td className="px-4 py-2 text-center">{alpa || '-'}</td>
-                      </tr>
-                    );
-                  })
+                  Object.keys(groupedPresensi).map((pelajaran, index) => (
+                    <tr key={`${pelajaran}-${index}`} className="border-t">
+                      <td className="px-4 py-2 font-medium">{pelajaran}</td>
+                      {allDates.map((tanggal) => {
+                        const presensi = getPresensiForDate(pelajaran, tanggal);
+                        return (
+                          <td key={tanggal} className="px-2 py-2 text-center">
+                            {presensi ? (
+                              <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                                presensi.status === 'hadir' ? 'bg-green-100 text-green-800' :
+                                presensi.status === 'sakit' ? 'bg-yellow-100 text-yellow-800' :
+                                presensi.status === 'izin' ? 'bg-blue-100 text-blue-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {presensi.status === 'hadir' ? 'H' :
+                                 presensi.status === 'sakit' ? 'S' :
+                                 presensi.status === 'izin' ? 'I' : 'A'}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))
                 ) : (
                   <tr className="border-t">
-                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={allDates.length + 1} className="px-4 py-8 text-center text-muted-foreground">
                       Tidak ada data presensi untuk semester ini.
                     </td>
                   </tr>
@@ -239,7 +269,7 @@ export default function MonitorPresensiWali({ siswaId, isOpen, onOpenChange }: M
           <div className="flex w-full items-center justify-end">
             <Button asChild disabled={!siswaData?.nis}>
               <a
-                href={siswaData?.nis ? '#' : '#'} // Ganti dengan rute 'presensi.report' setelah didefinisikan
+                href={siswaData?.nis ? route('presensi.pdf.siswa', { nis: siswaData.nis }) : '#'} // Ganti dengan rute 'presensi.report' setelah didefinisikan
                 target="_blank"
                 rel="noopener noreferrer"
               >

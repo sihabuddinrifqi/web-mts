@@ -11,6 +11,10 @@ export function isUsingNumber(input: string) {
 }
 
 export async function fetchApi<T>(url: string, config?: AxiosRequestConfig) {
-    const data = await axios.request<T>({ url: url, ...config });
+    const data = await axios.request<T>({ 
+        url: url, 
+        withCredentials: true,
+        ...config 
+    });
     return data.data;
 }

@@ -18,8 +18,8 @@ export default function Page({ prop }: { prop: APIPaginateResponse<Siswa> }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Data Anak" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <div className="flex items-start justify-between">
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-2 sm:p-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <Heading title="Data Anak" description="Menampilkan daftar anak yang berada dalam bimbingan atau pengawasan orang tua wali. " />
                 </div>
                 <Separator />

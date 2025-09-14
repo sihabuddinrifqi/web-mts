@@ -89,8 +89,11 @@ Route::prefix('/api')
 
                 Route::get('/pelajaran/{pelajaran}/presensi/{tanggal}', [PelajaranController::class, 'APIPresensi'])
                     ->name('pelajaran.presensi');
-             Route::get('/detail/pelajaran/{pelajaran}/siswa', [PresensiController::class, 'siswaByPelajaran']);
-            Route::post('/detail/pelajaran/{pelajaran}/presensi', [PresensiController::class, 'storeByPelajaran']);
+                    
+                Route::get('/pelajaran/{pelajaran}/siswa', [PresensiController::class, 'siswaByPelajaran'])
+                    ->name('pelajaran.siswa');
+                Route::post('/pelajaran/{pelajaran}/presensi', [PresensiController::class, 'storeByPelajaran'])
+                    ->name('pelajaran.presensi.store');
             
             });
             

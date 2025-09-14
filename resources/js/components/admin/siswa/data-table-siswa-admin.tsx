@@ -68,7 +68,7 @@ export default function DataTableSiswaAdmin({ siswaData, filters }: Props) {
 
       {/* Table */}
       <div className="w-full overflow-x-auto rounded-lg border">
-        <Table className="min-w-[900px]">
+        <Table className="min-w-[800px]">
           <TableHeader>
             <TableRow className="bg-muted">
               <TableHead>No</TableHead>

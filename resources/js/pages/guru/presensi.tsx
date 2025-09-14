@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, Download, Calendar, Users } from 'lucide-react';
+import { Search, Filter, Download, Calendar, Users, Printer } from 'lucide-react';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -101,14 +101,28 @@ export default function GuruPresensiPage({ presensi, pelajaran, filters }: GuruP
         <>
             <Head title="Data Presensi Siswa Didik" />
             <div className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Data Presensi Siswa Didik</h1>
+                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Data Presensi Siswa Didik</h1>
                         <p className="text-muted-foreground">
                             Pantau presensi siswa yang menjadi tanggung jawab Anda sebagai wali kelas
                         </p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
+                        <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                                const params = new URLSearchParams();
+                                if (pelajaranFilter) params.append('pelajaran_id', pelajaranFilter);
+                                if (tanggalFilter) params.append('tanggal', tanggalFilter);
+                                if (statusFilter) params.append('status', statusFilter);
+                                window.open(route('presensi.pdf') + '?' + params.toString(), '_blank');
+                            }}
+                        >
+                            <Printer className="mr-2 h-4 w-4" />
+                            Cetak Laporan Presensi
+                        </Button>
                         <Button variant="outline" size="sm">
                             <Download className="mr-2 h-4 w-4" />
                             Export
