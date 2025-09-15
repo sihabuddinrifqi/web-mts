@@ -99,7 +99,7 @@ class WalisiswaController extends Controller
 
         Izin::create($validated);
 
-        return redirect()->route('walisiswa.izin');
+        return redirect()->route('wali.izin');
     }
 
     public function show_izin(Izin $izin)
@@ -126,6 +126,6 @@ class WalisiswaController extends Controller
 
         $izin->delete();
 
-        return redirect()->route('walisiswa.izin')->with('success', 'Pengajuan izin berhasil dihapus.');
+        return redirect()->route('wali.izin')->with('success', 'Pengajuan izin berhasil dihapus.');
     }
 }

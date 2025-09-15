@@ -104,7 +104,7 @@ export default function IzinFormAddAdmin() {
                                                 setTanggalPulang(date);
                                                 setPulangOpen(false);
                                             }}
-                                            initialFocus
+                                            
                                         />
                                     </PopoverContent>
                                 </Popover>
@@ -134,7 +134,7 @@ export default function IzinFormAddAdmin() {
                                                 setTanggalKembali(date);
                                                 setKembaliOpen(false);
                                             }}
-                                            initialFocus
+                                            
                                         />
                                     </PopoverContent>
                                 </Popover>
