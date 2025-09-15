@@ -31,6 +31,11 @@ export default function WalisiswaViewAdmin({ walisiswa }: { walisiswa: WaliSiswa
                             <p className="font-medium">{walisiswa.phone}</p>
                         </div>
 
+                        <div>
+                            <h3 className="text-sm text-gray-500">Username & Password</h3>
+                            <p className="font-medium">{walisiswa.username as string} | {walisiswa.first_password as string}</p>
+                        </div>
+
                         <div className="col-span-2">
                             <h3 className="text-sm text-gray-500">Jumlah Anak</h3>
                             <p className="font-medium">{walisiswa.anak?.length}</p>

@@ -3,70 +3,157 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Guru\GuruStoreRequest;
-use App\Models\Guru;
+use App\Models\User; // Guru tersimpan di tabel users
 use App\Models\Pelajaran;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class GuruManagerController extends Controller
 {
+    /**
+     * Tampilkan halaman list guru
+     */
     public function index(Request $request)
     {
+        $prop = User::where('role', 'guru')
+            ->paginate(10)
+            ->appends($request->all());
+
         return Inertia::render('admin/guru', [
-            'prop' => Guru::paginateWithSearch($request, ['name'], ['anak', 'pelajaran'])
+            'prop' => $prop
         ]);
     }
 
+    /**
+     * API untuk list guru
+     */
     public function api(Request $request)
     {
-        return response()->json(Guru::paginateWithSearch($request, ['name'], ['anak', 'pelajaran']));
+        $guru = User::where('role', 'guru')
+            ->paginate(10)
+            ->appends($request->all());
+
+        return response()->json($guru);
     }
 
-    public function APIshowPelajaran(Guru $guru)
+    /**
+     * API detail guru
+     */
+    public function detail(User $guru)
     {
-        $pelajaran = Pelajaran::query()->where('pengampu_id', $guru->id)->get();
-        $count = $pelajaran->count();
+        if ($guru->role !== 'guru') {
+            return response()->json([
+                'message' => 'Data bukan guru',
+            ], 404);
+        }
+
         return response()->json([
-            'message' => $count > 0 ? 'successfulyy received guru\'z Pelajaran' : 'data not found',
+            'message' => 'Data guru berhasil diambil',
+            'received' => 1,
+            'data' => $guru,
+        ]);
+    }
+
+    /**
+     * Store guru baru
+     */
+    public function store(GuruStoreRequest $request)
+    {
+        $validated = $request->validated();
+
+        $password = Str::random(8);
+        $validated['password'] = bcrypt($password);
+        $validated['first_password'] = $password;
+        $validated['username'] = User::generateUsername($validated['name'], 'guru');
+        $validated['role'] = 'guru';
+
+        User::create($validated);
+
+        return redirect()->route('admin.guru.index')->with('success', 'Guru berhasil ditambahkan');
+    }
+
+    /**
+     * Update guru
+     */
+    public function update(Request $request, $id)
+    {
+        // Ambil guru dari tabel users
+        $guru = User::where('id', $id)->where('role', 'guru')->firstOrFail();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'jenis_kelamin' => 'required|in:laki-laki,perempuan',
+            'phone' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('users', 'phone')->ignore($guru->id),
+            ],
+        ]);
+
+        $guru->update($validated);
+
+        return response()->json([
+            'message' => 'Data guru berhasil diperbarui',
+            'data' => $guru,
+        ]);
+    }
+
+    /**
+     * Hapus guru
+     */
+    public function destroy($id)
+    {
+        $guru = User::where('id', $id)->where('role', 'guru')->firstOrFail();
+        $guru->delete();
+
+        return response()->json([
+            'message' => 'Guru berhasil dihapus'
+        ]);
+    }
+
+    /**
+     * API menampilkan pelajaran yang diampu guru
+     */
+    public function APIshowPelajaran(User $guru)
+    {
+        if ($guru->role !== 'guru') {
+            return response()->json([
+                'message' => 'Data bukan guru'
+            ], 404);
+        }
+
+        $pelajaran = Pelajaran::where('pengampu_id', $guru->id)->get();
+        $count = $pelajaran->count();
+
+        return response()->json([
+            'message' => $count > 0 ? 'Berhasil mengambil data pelajaran guru' : 'Data tidak ditemukan',
             'received' => $count,
             'data' => $pelajaran
         ], $count > 0 ? 200 : 404);
     }
 
-    public function APIshowSiswaDidik(Guru $guru)
+    /**
+     * API menampilkan siswa didik guru
+     */
+    public function APIshowSiswaDidik(User $guru)
     {
+        if ($guru->role !== 'guru') {
+            return response()->json([
+                'message' => 'Data bukan guru'
+            ], 404);
+        }
+
         $siswa = Siswa::where('guru_id', $guru->id)->get();
         $count = $siswa->count();
+
         return response()->json([
-            'message' => $count > 0 ? 'successfulyy received guru\'z siswa didik' : 'data not found',
+            'message' => $count > 0 ? 'Berhasil mengambil siswa didik guru' : 'Data tidak ditemukan',
             'received' => $count,
             'data' => $siswa
         ], $count > 0 ? 200 : 404);
-    }
-
-    public function store(GuruStoreRequest $request)
-    {
-        $validated = $request->validated();
-        $password = Str::random(8);
-        $validated['password'] = bcrypt($password);
-        $validated['first_password'] = $password;
-        $validated['username'] = Guru::generateUsername($validated['name'], 'guru');
-        $validated['role'] = 'guru';
-        Guru::create($validated);
-        return redirect()->route('admin.guru.index');
-    }
-
-    public function update(Request $request, Guru $guru)
-    {
-        // Update guru logic here
-        return redirect()->route('admin.guru.index');
-    }
-
-    public function destroy(Guru $guru)
-    {
-        $guru->delete();
-        return redirect()->route('admin.guru.index');
     }
 }

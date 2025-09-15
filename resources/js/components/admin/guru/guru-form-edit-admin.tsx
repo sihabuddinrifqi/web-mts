@@ -1,181 +1,184 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { id } from 'date-fns/locale';
-import { CalendarIcon } from 'lucide-react';
-import { useState } from 'react';
+import { fetchApi } from '@/lib/utils';
+import { FormEventHandler, useEffect, useState, Dispatch, SetStateAction } from 'react';
 
 type GuruFormEditAdminProps = {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    id: number;
+  id?: number;
+  open: boolean;
+  onOpenChange: Dispatch<SetStateAction<boolean>>;
 };
 
-export default function GuruFormEditAdmin({ open, onOpenChange }: GuruFormEditAdminProps) {
-    const [date, setDate] = useState<Date | undefined>(undefined);
+interface GuruRequestType {
+  name: string;
+  jenis_kelamin: 'laki-laki' | 'perempuan';
+  phone: string;
+}
 
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-h-screen overflow-y-auto sm:max-w-[625px]">
-                <DialogHeader>
-                    <DialogTitle>Edit Data Guru</DialogTitle>
-                    <DialogDescription>
-                        Perbarui informasi guru sesuai data terbaru. Pastikan semua kolom terisi dengan benar untuk keperluan administrasi dan
-                        akademik.
-                    </DialogDescription>
-                </DialogHeader>
+interface Guru {
+  id: number;
+  name: string;
+  jenis_kelamin: 'laki-laki' | 'perempuan';
+  phone: string;
+}
 
-                {/* Form */}
-                <div className="space-y-6 border-t py-4">
-                    {/* NIS & NIK */}
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <div className="flex flex-col space-y-2">
-                            <label htmlFor="nis" className="font-medium">
-                                NIS
-                            </label>
-                            <Input id="nis" placeholder="Masukan NIS" />
-                        </div>
+export default function GuruFormEditAdmin({ id, open, onOpenChange }: GuruFormEditAdminProps) {
+  const [data, setData] = useState<GuruRequestType>({
+    name: '',
+    jenis_kelamin: 'laki-laki',
+    phone: '',
+  });
+  const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-                        <div className="flex flex-col space-y-2">
-                            <label htmlFor="nik" className="font-medium">
-                                NIK
-                            </label>
-                            <Input id="nik" placeholder="Masukan NIK" />
-                        </div>
-                    </div>
+  const handleSetData = (key: keyof GuruRequestType, value: any) => {
+    setData((prev) => ({ ...prev, [key]: value }));
+  };
 
-                    {/* Nama & Jenis Kelamin */}
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <div className="flex flex-col space-y-2">
-                            <label htmlFor="nama" className="font-medium">
-                                Nama Lengkap
-                            </label>
-                            <Input id="nama" placeholder="Masukan nama lengkap" />
-                        </div>
+  const loadGuruData = async () => {
+    if (!id) {
+      setError('ID guru tidak valid');
+      return;
+    }
 
-                        <div className="flex flex-col space-y-2">
-                            <label htmlFor="jenisKelamin" className="font-medium">
-                                Jenis Kelamin
-                            </label>
-                            <Select>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="laki-laki">Laki-laki</SelectItem>
-                                    <SelectItem value="perempuan">Perempuan</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
+    setLoading(true);
+    setError(null);
 
-                    {/* Tempat Lahir & Tanggal Lahir */}
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <div className="flex flex-col space-y-2">
-                            <label htmlFor="tempatLahir" className="font-medium">
-                                Tempat Lahir
-                            </label>
-                            <Input id="tempatLahir" placeholder="Masukan Tempat Lahir" />
-                        </div>
+    try {
+      const url = route?.('api.detail.guru', { guru: id }) || `/api/detail/guru/${id}`;
+      const res = await fetchApi<{ message: string; received: number; data: Guru }>(url);
 
-                        <div className="flex flex-col space-y-2">
-                            <label htmlFor="tanggalLahir" className="font-medium">
-                                Tanggal Lahir
-                            </label>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button variant="outline" className={cn('w-full justify-start text-left font-normal', !date && 'text-gray-400')}>
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {date ? format(date, 'PPP', { locale: id }) : 'Pilih tanggal'}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
-                                    <Calendar mode="single" selected={date} onSelect={setDate}  />
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-                    </div>
+      if (!res || !res.data) {
+        throw new Error('Data guru tidak ditemukan');
+      }
 
-                    {/* Alamat */}
-                    <div className="flex flex-col space-y-2">
-                        <label htmlFor="alamat" className="font-medium">
-                            Alamat
-                        </label>
-                        <Textarea id="alamat" placeholder="Masukan alamat lengkap" rows={3} />
-                    </div>
+      const guru = res.data;
+      setData({
+        name: guru.name || '',
+        jenis_kelamin: guru.jenis_kelamin || 'laki-laki',
+        phone: guru.phone || '',
+      });
+    } catch (err: any) {
+      console.error('❌ Error load guru:', err);
+      setError(err.message || 'Gagal memuat data guru');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                    {/* Angkatan & Peran */}
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <div className="flex flex-col space-y-2">
-                            <label htmlFor="angkatan" className="font-medium">
-                                Angkatan
-                            </label>
-                            <Input id="angkatan" placeholder="contoh: 2025" />
-                        </div>
+  useEffect(() => {
+    if (open && id) loadGuruData();
+  }, [open, id]);
 
-                        <div className="flex flex-col space-y-2">
-                            <label htmlFor="peran" className="font-medium">
-                                Peran
-                            </label>
-                            <Select>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Regular" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="regular">Regular</SelectItem>
-                                    <SelectItem value="khusus">Khusus</SelectItem>
-                                    <SelectItem value="beasiswa">Beasiswa</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
+  const submit: FormEventHandler = async (e) => {
+    e.preventDefault();
+    if (!id) return;
 
-                    {/* Guru & Wali */}
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <div className="flex flex-col space-y-2">
-                            <label htmlFor="guru" className="font-medium">
-                                Guru Pembimbing
-                            </label>
-                            <Select>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="guru1">Guru Ahmad</SelectItem>
-                                    <SelectItem value="guru2">Guru Mahmud</SelectItem>
-                                    <SelectItem value="guru3">Guru Hasan</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+    setProcessing(true);
+    setError(null);
 
-                        <div className="flex flex-col space-y-2">
-                            <label htmlFor="wali" className="font-medium">
-                                Nama Orang Tua / Wali
-                            </label>
-                            <Select>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Masukan nama orang tua" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="wali1">Ahmad Ridwan Hakim</SelectItem>
-                                    <SelectItem value="wali2">Nur Aini Fadillah</SelectItem>
-                                    <SelectItem value="wali3">H. Muhammad Zainal Abidin</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                </div>
+    try {
+      // URL update sesuai resource route Laravel
+      const updateUrl = route?.('admin.guru.update', { guru: id }) || `/admin/guru/${id}`;
+      const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content;
 
-                <DialogFooter>
-                    <Button type="submit">Save changes</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
+      await fetchApi(updateUrl, {
+        method: 'POST', // POST + _method: PUT
+        data: {
+          ...data,
+          _method: 'PUT',
+          _token: csrfToken,
+        },
+      });
+
+      alert('Data guru berhasil diperbarui!');
+      onOpenChange(false);
+    } catch (err: any) {
+      console.error('❌ Error update guru:', err);
+      setError(err.message || 'Gagal menyimpan data guru');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-screen overflow-y-auto sm:max-w-[625px]">
+        <DialogHeader>
+          <DialogTitle>Edit Data Guru</DialogTitle>
+          <DialogDescription>
+            Perbarui informasi guru sesuai data terbaru. Pastikan semua kolom terisi dengan benar.
+          </DialogDescription>
+        </DialogHeader>
+
+        {loading ? (
+          <div className="py-12 text-center">
+            <p>Memuat data...</p>
+            <p className="text-sm text-gray-500">ID: {id}</p>
+          </div>
+        ) : error ? (
+          <div className="py-12 text-center text-red-600">
+            <p className="font-medium">Terjadi Kesalahan:</p>
+            <p className="text-sm mt-2">{error}</p>
+            <Button variant="outline" className="mt-4" onClick={loadGuruData}>
+              Coba Lagi
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="space-y-6 py-4">
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="edit-nama" className="font-medium">Nama Lengkap</label>
+              <Input
+                id="edit-nama"
+                placeholder="Masukkan nama lengkap"
+                value={data.name}
+                onChange={(e) => handleSetData('name', e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="jenisKelamin" className="font-medium">Jenis Kelamin</label>
+              <Select
+                value={data.jenis_kelamin}
+                onValueChange={(val) => handleSetData('jenis_kelamin', val as 'laki-laki' | 'perempuan')}
+                required
+              >
+                <SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="laki-laki">Laki-laki</SelectItem>
+                  <SelectItem value="perempuan">Perempuan</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="telepon" className="font-medium">Nomor Telepon</label>
+              <Input
+                id="telepon"
+                placeholder="Masukkan nomor telepon"
+                value={data.phone}
+                onChange={(e) => handleSetData('phone', e.target.value)}
+                required
+              />
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Batal
+              </Button>
+              <Button type="submit" disabled={processing}>
+                {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
 }
