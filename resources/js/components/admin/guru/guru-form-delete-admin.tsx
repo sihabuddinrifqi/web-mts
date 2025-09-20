@@ -11,9 +11,10 @@ type GuruFormDeleteAdminProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     id: number;
+    onDeleteSuccess: () => void;
 };
 
-export default function GuruFormDeleteAdmin({ open, onOpenChange, id }: GuruFormDeleteAdminProps) {
+export default function GuruFormDeleteAdmin({ open, onOpenChange , id, onDeleteSuccess }: GuruFormDeleteAdminProps) {
     const [data, setData] = useState<Guru | undefined>(undefined);
 
     return (
@@ -52,7 +53,16 @@ export default function GuruFormDeleteAdmin({ open, onOpenChange, id }: GuruForm
                         Batal
                     </Button>
                     <Button variant="destructive" asChild>
-                        <Link href={route('admin.guru.destroy', id)} method="delete">
+                        {/* [PERBAIKAN] Logika handleSuccess dipindahkan ke sini sebagai inline function */}
+                        <Link
+                            href={(window as any).route('admin.guru.destroy', id)}
+                            method="delete"
+                            as="button"
+                            onSuccess={() => {
+                                onDeleteSuccess();
+                                onOpenChange(false);
+                            }}
+                        >
                             Hapus data
                         </Link>
                     </Button>

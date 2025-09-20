@@ -90,7 +90,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 <div className="ml-9 hidden lg:block lg:w-1/2 text-white pr-12">
                     {/* 👇 2. SHADOW DITINGKATKAN MENJADI 'drop-shadow-lg' 👇 */}
                     <h1 className="text-5xl xl:text-6xl font-bold leading-tight drop-shadow-lg">
-                        Sistem Informasi MTs Ash-Sholihin
+                        Sistem Informasi Akademik <br></br> MTs Ash-Sholihin
                     </h1>
                     {/* 👇 2. SHADOW DITINGKATKAN MENJADI 'drop-shadow-md' 👇 */}
                     <p className="mt-4 text-lg xl:text-xl text-white/80 drop-shadow-md">

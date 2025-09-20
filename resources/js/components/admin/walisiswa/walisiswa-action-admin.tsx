@@ -16,10 +16,21 @@ import { EllipsisVertical, PenBox, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import WalisiswaFormDeleteAdmin from './walisiswa-form-delete-admin';
 import WalisiswaFormEditAdmin from './walisiswa-form-edit-admin';
+import { router } from '@inertiajs/react';
 
 export const WalisiswaActionAdmin: React.FC<{ walisiswa: WaliSiswa }> = (props) => {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+    /**
+     * Fungsi ini akan dipanggil dari dalam form setelah aksi berhasil.
+     * Tugasnya adalah memicu Inertia untuk memuat ulang data di halaman.
+     */
+    const handleActionSuccess = () => {
+        console.log(`Aksi untuk wali siswa ID ${props.walisiswa.id} berhasil. Memuat ulang data...`);
+        // @ts-ignore - preserveScroll adalah opsi yang valid di Inertia.js
+        router.reload({ preserveScroll: true });
+    };
 
     return (
         <>
@@ -34,17 +45,29 @@ export const WalisiswaActionAdmin: React.FC<{ walisiswa: WaliSiswa }> = (props) 
                     <DropdownMenuLabel>Aksi</DropdownMenuLabel>
                     <DropdownMenuSeparator />
 
-                    <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
+                    <DropdownMenuItem onSelect={() => setEditDialogOpen(true)}>
                         <PenBox className="mr-1 h-4 w-4" /> Edit Wali Siswa
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)}>
+                    <DropdownMenuItem onSelect={() => setDeleteDialogOpen(true)} className="text-red-600 focus:text-red-600">
                         <Trash2 className="mr-1 h-4 w-4" /> Hapus Wali Siswa
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <WalisiswaFormEditAdmin id={props.walisiswa.id} open={editDialogOpen} onOpenChange={setEditDialogOpen} />
-            <WalisiswaFormDeleteAdmin id={props.walisiswa.id} open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} />
+            {/* Menghubungkan callback onUpdateSuccess ke form edit */}
+            <WalisiswaFormEditAdmin
+                id={props.walisiswa.id}
+                open={editDialogOpen}
+                onOpenChange={setEditDialogOpen}
+                onUpdateSuccess={handleActionSuccess}
+            />
+            {/* Menghubungkan callback onDeleteSuccess ke form hapus */}
+            <WalisiswaFormDeleteAdmin
+                id={props.walisiswa.id}
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                onDeleteSuccess={handleActionSuccess}
+            />
         </>
     );
 };

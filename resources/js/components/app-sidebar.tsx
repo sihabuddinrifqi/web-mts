@@ -76,7 +76,7 @@ export const mainNavItems: NavItem[] = [
         role_access: ['walisiswa'],
     },
     {
-        title: 'Surat Izin Anak',
+        title: 'Laporan Izin Anak',
         href: '/wali/izin',
         icon: BookOpenTextIcon,
         role_access: ['walisiswa'],

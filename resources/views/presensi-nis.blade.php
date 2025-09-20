@@ -10,14 +10,48 @@
             font-size: 11px;
             line-height: 1.4;
         }
-        .header {
-            text-align: center;
+
+        /* Header (kop surat) */
+        .header-table {
+            width: 100%;
+            border-bottom: 3px double black;
             margin-bottom: 15px;
         }
+        .header-table td {
+            vertical-align: middle;
+            text-align: center;
+            border: none; /* hilangkan border pada sel */
+        }
+        .header-logo {
+            width: 110px;
+            text-align: left;
+        }
+        .header-logo img {
+            width: 100px;
+            height: 100px;
+        }
+        .header-text {
+            text-align: center;
+        }
+        .madrasah {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .pondok {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .address, .contact, .nsm-npsn {
+            font-size: 11px;
+        }
+
         .main-title {
+            text-align: center;
             font-size: 16px;
             font-weight: bold;
             text-decoration: underline;
+            margin: 20px 0;
         }
         .subtitle {
             font-size: 12px;
@@ -29,6 +63,7 @@
             margin-bottom: 15px;
         }
 
+        /* Tabel isi */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -64,9 +99,48 @@
         .summary-table th {
             background-color: #e9e9e9;
         }
+
+        /* TTD */
+        .ttd {
+            width: 100%;
+            margin-top: 50px;
+            border: none; /* hilangkan border tabel tanda tangan */
+        }
+        .ttd td {
+            vertical-align: top;
+            text-align: center;
+            width: 50%;
+            border: none; /* hilangkan border pada sel */
+        }
+        .ttd .right {
+            text-align: right;
+            padding-right: 50px;
+        }
     </style>
 </head>
 <body>
+    <!-- Kop Surat -->
+    <table class="header-table">
+        <tr>
+            <td class="header-logo">
+                <img src="{{ public_path('logo.png') }}" alt="Logo Madrasah">
+            </td>
+            <td class="header-text">
+                <div class="madrasah">MADRASAH TSANAWIYAH</div>
+                <div class="pondok">"ASH – SHOLIHIN"</div>
+                <div class="address">
+                    Kemiri RT 02 RW 06 Bumiroso Watumalang Wonosobo 56352 Jawa Tengah
+                </div>
+                <div class="contact">
+                    WA : 0823 3184 8872 | Email : mtsashsholihin@gmail.com
+                </div>
+                <div class="nsm-npsn">
+                    NSM : 121233070051 &nbsp;&nbsp; NPSN : 70044220
+                </div>
+            </td>
+        </tr>
+    </table>
+
     <div class="header">
         <div class="main-title">{{ $title }}</div>
         <div class="subtitle">Nama: {{ $siswa->name }}</div>
@@ -126,6 +200,19 @@
                 <td>Total</td><td>{{ $summary['total'] }}</td>
             </tr>
         </tbody>
+    </table>
+
+    <!-- Bagian Tanda Tangan -->
+    <table class="ttd">
+        <tr>
+            <td></td>
+            <td class="right">
+                Wonosobo, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br>
+                Wali Kelas<br><br><br><br>
+                <u>{{ $walikelas['name'] ?? '________________' }}</u><br>
+                NIP. {{ $walikelas['nip'] ?? '__________' }}
+            </td>
+        </tr>
     </table>
 </body>
 </html>

@@ -13,10 +13,21 @@ import { EllipsisVertical, PenBox, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import PelajaranFormDeleteAdmin from './pelajaran-form-delete-admin';
 import PelajaranFormEditAdmin from './pelajaran-form-edit-admin';
+import { router } from '@inertiajs/react';
 
 export function PelajaranActionAdmin({ id }: { id: number }) {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+    /**
+     * Fungsi ini akan dipanggil dari dalam form setelah aksi berhasil (edit/hapus).
+     * Tugasnya adalah memicu Inertia untuk memuat ulang data di halaman.
+     */
+    const handleActionSuccess = () => {
+        console.log(`Aksi untuk pelajaran ID ${id} berhasil. Memuat ulang data...`);
+        // @ts-ignore - preserveScroll adalah opsi yang valid di Inertia.js
+        router.reload({ preserveScroll: true });
+    };
 
     return (
         <>
@@ -31,17 +42,29 @@ export function PelajaranActionAdmin({ id }: { id: number }) {
                     <DropdownMenuLabel>Aksi</DropdownMenuLabel>
                     <DropdownMenuSeparator />
 
-                    <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
+                    <DropdownMenuItem onSelect={() => setEditDialogOpen(true)}>
                         <PenBox className="mr-1 h-4 w-4" /> Edit pelajaran
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)}>
+                    <DropdownMenuItem onSelect={() => setDeleteDialogOpen(true)} className="text-red-600 focus:text-red-600">
                         <Trash2 className="mr-1 h-4 w-4" /> Hapus pelajaran
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <PelajaranFormEditAdmin id={id} open={editDialogOpen} onOpenChange={setEditDialogOpen} />
-            <PelajaranFormDeleteAdmin id={id} open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} />
+            {/* Menghubungkan callback onUpdateSuccess ke form edit */}
+            <PelajaranFormEditAdmin
+                id={id}
+                open={editDialogOpen}
+                onOpenChange={setEditDialogOpen}
+                onUpdateSuccess={handleActionSuccess}
+            />
+            {/* Menghubungkan callback onDeleteSuccess ke form hapus */}
+            <PelajaranFormDeleteAdmin
+                id={id}
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                onDeleteSuccess={handleActionSuccess}
+            />
         </>
     );
 }

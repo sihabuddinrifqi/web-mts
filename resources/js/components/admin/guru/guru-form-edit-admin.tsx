@@ -11,25 +11,29 @@ type GuruFormEditAdminProps = {
   id?: number;
   open: boolean;
   onOpenChange: Dispatch<SetStateAction<boolean>>;
+  // Prop untuk memicu auto-refresh di komponen induk
+  onUpdateSuccess: () => void;
 };
 
 interface GuruRequestType {
   name: string;
-  jenis_kelamin: 'laki-laki' | 'perempuan';
+  jenis_kelamin: 'pria' | 'wanita';
   phone: string;
 }
 
 interface Guru {
   id: number;
   name: string;
-  jenis_kelamin: 'laki-laki' | 'perempuan';
+  // Di backend, ini mungkin 'L'/'P' atau 'laki-laki'/'perempuan', 
+  // tapi frontend akan konsisten menggunakan 'pria'/'wanita'.
+  jenis_kelamin: 'pria' | 'wanita' | 'L' | 'P' | 'laki-laki' | 'perempuan';
   phone: string;
 }
 
-export default function GuruFormEditAdmin({ id, open, onOpenChange }: GuruFormEditAdminProps) {
+export default function GuruFormEditAdmin({ id, open, onOpenChange, onUpdateSuccess }: GuruFormEditAdminProps) {
   const [data, setData] = useState<GuruRequestType>({
     name: '',
-    jenis_kelamin: 'laki-laki',
+    jenis_kelamin: 'pria',
     phone: '',
   });
   const [loading, setLoading] = useState(false);
@@ -50,7 +54,7 @@ export default function GuruFormEditAdmin({ id, open, onOpenChange }: GuruFormEd
     setError(null);
 
     try {
-      const url = route?.('api.detail.guru', { guru: id }) || `/api/detail/guru/${id}`;
+      const url = (window as any).route?.('api.detail.guru', { guru: id }) || `/api/detail/guru/${id}`;
       const res = await fetchApi<{ message: string; received: number; data: Guru }>(url);
 
       if (!res || !res.data) {
@@ -58,9 +62,18 @@ export default function GuruFormEditAdmin({ id, open, onOpenChange }: GuruFormEd
       }
 
       const guru = res.data;
+      
+      // Menyesuaikan data dari backend ke format frontend
+      let jk: 'pria' | 'wanita' = 'pria';
+      if (guru.jenis_kelamin === 'perempuan' || guru.jenis_kelamin === 'P') {
+          jk = 'wanita';
+      } else if (guru.jenis_kelamin === 'laki-laki' || guru.jenis_kelamin === 'L') {
+          jk = 'pria';
+      }
+
       setData({
         name: guru.name || '',
-        jenis_kelamin: guru.jenis_kelamin || 'laki-laki',
+        jenis_kelamin: jk,
         phone: guru.phone || '',
       });
     } catch (err: any) {
@@ -83,12 +96,11 @@ export default function GuruFormEditAdmin({ id, open, onOpenChange }: GuruFormEd
     setError(null);
 
     try {
-      // URL update sesuai resource route Laravel
-      const updateUrl = route?.('admin.guru.update', { guru: id }) || `/admin/guru/${id}`;
+      const updateUrl = (window as any).route?.('admin.guru.update', { guru: id }) || `/admin/guru/${id}`;
       const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content;
 
       await fetchApi(updateUrl, {
-        method: 'POST', // POST + _method: PUT
+        method: 'POST',
         data: {
           ...data,
           _method: 'PUT',
@@ -96,7 +108,7 @@ export default function GuruFormEditAdmin({ id, open, onOpenChange }: GuruFormEd
         },
       });
 
-      alert('Data guru berhasil diperbarui!');
+      onUpdateSuccess();
       onOpenChange(false);
     } catch (err: any) {
       console.error('❌ Error update guru:', err);
@@ -119,7 +131,6 @@ export default function GuruFormEditAdmin({ id, open, onOpenChange }: GuruFormEd
         {loading ? (
           <div className="py-12 text-center">
             <p>Memuat data...</p>
-            <p className="text-sm text-gray-500">ID: {id}</p>
           </div>
         ) : error ? (
           <div className="py-12 text-center text-red-600">
@@ -132,9 +143,9 @@ export default function GuruFormEditAdmin({ id, open, onOpenChange }: GuruFormEd
         ) : (
           <form onSubmit={submit} className="space-y-6 py-4">
             <div className="flex flex-col space-y-2">
-              <label htmlFor="edit-nama" className="font-medium">Nama Lengkap</label>
+              <label htmlFor="edit-nama-guru" className="font-medium">Nama Lengkap</label>
               <Input
-                id="edit-nama"
+                id="edit-nama-guru"
                 placeholder="Masukkan nama lengkap"
                 value={data.name}
                 onChange={(e) => handleSetData('name', e.target.value)}
@@ -143,24 +154,24 @@ export default function GuruFormEditAdmin({ id, open, onOpenChange }: GuruFormEd
             </div>
 
             <div className="flex flex-col space-y-2">
-              <label htmlFor="jenisKelamin" className="font-medium">Jenis Kelamin</label>
+              <label htmlFor="jk-guru" className="font-medium">Jenis Kelamin</label>
               <Select
                 value={data.jenis_kelamin}
-                onValueChange={(val) => handleSetData('jenis_kelamin', val as 'laki-laki' | 'perempuan')}
+                onValueChange={(val) => handleSetData('jenis_kelamin', val as 'pria' | 'wanita')}
                 required
               >
-                <SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger>
+                <SelectTrigger id="jk-guru"><SelectValue placeholder="Pilih" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="laki-laki">Laki-laki</SelectItem>
-                  <SelectItem value="perempuan">Perempuan</SelectItem>
+                  <SelectItem value="pria">Laki-Laki</SelectItem>
+                  <SelectItem value="wanita">Perempuan</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="flex flex-col space-y-2">
-              <label htmlFor="telepon" className="font-medium">Nomor Telepon</label>
+              <label htmlFor="telepon-guru" className="font-medium">Nomor Telepon</label>
               <Input
-                id="telepon"
+                id="telepon-guru"
                 placeholder="Masukkan nomor telepon"
                 value={data.phone}
                 onChange={(e) => handleSetData('phone', e.target.value)}
@@ -182,3 +193,4 @@ export default function GuruFormEditAdmin({ id, open, onOpenChange }: GuruFormEd
     </Dialog>
   );
 }
+

@@ -110,7 +110,7 @@ export default function LessonViewGuru({ pelajaran }: { pelajaran: Pelajaran }) 
         <Dialog>
             <DialogTrigger asChild>
                 <Button variant="default" size="sm">
-                    <BookOpenText className="mr-2 h-4 w-4" /> Daftar Nilai
+                    <BookOpenText className="mr-2 h-4 w-4" /> Input Nilai
                 </Button>
             </DialogTrigger>
             <DialogContent

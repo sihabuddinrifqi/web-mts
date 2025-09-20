@@ -18,8 +18,10 @@ class Siswa extends User
 
     public function guru()
     {
-        return $this->belongsTo(Guru::class, 'guru_id');
+        return $this->belongsTo(\App\Models\User::class, 'guru_id', 'id')
+                    ->where('role', 'guru');
     }
+
 
     public function ortu()
     {

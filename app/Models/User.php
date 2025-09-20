@@ -26,6 +26,7 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
+        'jenis_kelamin', 
         'username',
         'role',
         'first_password',

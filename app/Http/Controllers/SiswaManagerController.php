@@ -43,17 +43,36 @@ class SiswaManagerController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(SiswaStoreRequest $request)
-    {
-        $validated = $request->validated();
-        $password = Str::random(8);
-        $validated['password'] = bcrypt($password);
-        $validated['first_password'] = $password;
-        $validated['nis'] = Siswa::generateNis($validated['angkatan']);
-        $validated['username'] = $validated['nis'];
-        $validated['role'] = 'siswa';
-        Siswa::create($validated);
-        return redirect(route('admin.siswa.index'));
-    }
+{
+    $validated = $request->validated();
+
+    // Tambahkan validasi manual jika SiswaStoreRequest belum mencakup guru_id dan ortu_id
+    $request->validate([
+        'guru_id' => [
+            'required',
+            'integer',
+            Rule::exists('users', 'id')->where(fn ($q) => $q->where('role', 'guru')),
+        ],
+        'ortu_id' => [
+            'required',
+            'integer',
+            Rule::exists('users', 'id')->where(fn ($q) => $q->where('role', 'walisiswa')),
+        ],
+    ]);
+
+    $password = Str::random(8);
+    $validated['password'] = bcrypt($password);
+    $validated['first_password'] = $password;
+    $validated['nis'] = Siswa::generateNis($validated['angkatan']);
+    $validated['username'] = $validated['nis'];
+    $validated['role'] = 'siswa';
+
+    // Simpan dengan guru_id & ortu_id
+    Siswa::create($validated);
+
+    return redirect(route('admin.siswa.index'))
+        ->with('success', 'Data siswa berhasil ditambahkan.');
+}
 
     /**
      * Update the specified resource in storage.

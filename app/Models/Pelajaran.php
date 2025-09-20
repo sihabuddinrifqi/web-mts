@@ -11,30 +11,62 @@ class Pelajaran extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['nama_pelajaran', 'semester', 'pengampu_id'];
+    /**
+     * The attributes that are mass assignable.
+     *
+     * [PERBAIKAN] Menambahkan 'angkatan' ke dalam daftar yang diizinkan
+     * agar bisa diupdate dari controller.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'nama_pelajaran',
+        'semester',
+        'pengampu_id',
+        'angkatan', // Ditambahkan
+        'waktu',    // Ditambahkan untuk konsistensi dengan fungsi store
+    ];
 
-    public function siswa()
+    /**
+     * Relasi ke Guru yang mengajar pelajaran ini.
+     */
+    public function pengampu()
     {
-        // Relasi many-to-many melalui tabel nilai untuk mendapatkan siswa unik yang terdaftar di pelajaran ini
-        return $this->belongsToMany(
-            Siswa::class,   // Model target (Siswa)
-            'nilais',       // Tabel pivot (nilais)
-            'pelajaran_id', // Foreign key di tabel pivot yang mengacu ke pelajaran
-            'siswa_id'      // Foreign key di tabel pivot yang mengacu ke siswa
-        );
+        return $this->belongsTo(User::class, 'pengampu_id');
     }
 
-
-    public function pengampu() // Guru who teaches
-    {
-        return $this->belongsTo(Guru::class, 'pengampu_id');
-    }
-
+    /**
+     * Relasi ke semua nilai yang terkait dengan pelajaran ini.
+     */
     public function nilai()
     {
         return $this->hasMany(Nilai::class, 'pelajaran_id');
     }
+    
+    /**
+     * Relasi ke semua siswa yang mengambil pelajaran ini (melalui tabel nilai).
+     */
+    public function siswa()
+    {
+        return $this->belongsToMany(
+            Siswa::class,
+            'nilais',       // Nama tabel pivot
+            'pelajaran_id', // Foreign key di tabel pivot untuk Pelajaran
+            'siswa_id'      // Foreign key di tabel pivot untuk Siswa
+        );
+    }
 
+    /**
+     * Relasi ke semua presensi yang terkait dengan pelajaran ini.
+     */
+    public function presensis()
+    {
+        return $this->hasMany(Presensi::class);
+    }
+
+    /**
+     * Fungsi helper untuk paginasi dengan pencarian.
+     */
     public static function paginateWithSearch(
         Request $request,
         array $searchable = [],
@@ -43,7 +75,9 @@ class Pelajaran extends Model
         $page = $request->query('page', 1);
         $limit = $request->query('limit', 10);
         $search = $request->query('search', '');
+        
         $query = static::query()->with($relations);
+
         if ($search && !empty($searchable)) {
             $query->where(function($q) use ($search, $searchable) {
                 foreach ($searchable as $field) {
@@ -52,14 +86,14 @@ class Pelajaran extends Model
             });
         }
         
-        $result = $query->paginate($limit, ['*'], 'page', $page);
-        abort_if($result->isEmpty(), 404, 'No records found');
+        $result = $query->paginate($limit, ['*'], 'page', 'page');
+        
+        // Menggunakan request->expectsJson() untuk menghindari abort pada API call
+        if ($result->isEmpty() && !$request->expectsJson()) {
+            abort(404, 'No records found');
+        }
+
         return $result;
     }
-
-    public function presensis()
-{
-    return $this->hasMany(Presensi::class);
 }
 
-}

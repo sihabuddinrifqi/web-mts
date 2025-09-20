@@ -11,10 +11,12 @@ type WalisiswaFormDeleteAdminProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     id: number;
+    onDeleteSuccess: () => void;
+
 };
 
 // Nama komponen sudah disesuaikan
-export default function WalisiswaFormDeleteAdmin({ open, onOpenChange, id }: WalisiswaFormDeleteAdminProps) {
+export default function WalisiswaFormDeleteAdmin({ open, onOpenChange,  id, onDeleteSuccess }: WalisiswaFormDeleteAdminProps) {
     // 1. Gunakan state untuk menampung data dinamis dari API
     const [data, setData] = useState<Walisiswa | undefined>(undefined);
 
@@ -60,7 +62,11 @@ export default function WalisiswaFormDeleteAdmin({ open, onOpenChange, id }: Wal
                     </Button>
                     <Button variant="destructive" asChild>
                         {/* Pastikan nama route sudah benar */}
-                        <Link href={route('admin.walisiswa.destroy', id)} method="delete">
+                        <Link href={route('admin.walisiswa.destroy', id)} method="delete" as="button"
+                            onSuccess={() => {
+                                onDeleteSuccess();
+                                onOpenChange(false);
+                            }} >
                             Hapus data
                         </Link>
                     </Button>

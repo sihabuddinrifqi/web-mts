@@ -12,19 +12,25 @@ import { WaliSiswa } from '@/types/users';
 import { Guru } from '@/types/walisiswa/anak';
 import { FormEventHandler, useState, Dispatch, SetStateAction, useEffect } from 'react';
 
+// --- Deklarasi Tipe untuk Props ---
 type SiswaFormEditAdminProps = {
   id?: number;
   open: boolean;
   onOpenChange: Dispatch<SetStateAction<boolean>>;
+  onUpdateSuccess: () => void; // Prop callback untuk memicu refresh data di komponen induk
 };
 
-export default function SiswaFormEditAdmin({ id, open, onOpenChange }: SiswaFormEditAdminProps) {
-const [selectedSiswaId, setSelectedSiswaId] = useState<number | null>(null);
+// --- Mocking 'route' function jika tidak tersedia ---
+// Dalam aplikasi nyata, ini biasanya disediakan oleh framework seperti Laravel (Ziggy)
+declare function route(routeName: string, params?: any): string;
+
+export default function SiswaFormEditAdmin({ id, open, onOpenChange, onUpdateSuccess }: SiswaFormEditAdminProps) {
   const [processing, setProcessing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<SiswaRequestType>>({});
-  const [data, setData] = useState<SiswaRequestType>({
+  
+  const initialDataState: SiswaRequestType = {
     name: '',
     nik: '',
     alamat: '',
@@ -35,7 +41,8 @@ const [selectedSiswaId, setSelectedSiswaId] = useState<number | null>(null);
     siswa_role: 'regular',
     guru_id: -1,
     ortu_id: -1,
-  });
+  };
+  const [data, setData] = useState<SiswaRequestType>(initialDataState);
 
   const [dataWali, setDataWali] = useState<WaliSiswa[]>([]);
   const [dataGuru, setDataGuru] = useState<Guru[]>([]);
@@ -45,9 +52,8 @@ const [selectedSiswaId, setSelectedSiswaId] = useState<number | null>(null);
   };
 
   const loadData = async () => {
-    console.log('🔄 loadData dipanggil dengan ID:', id);
     if (!id || id <= 0) {
-      setError('ID siswa tidak valid');
+      setError('ID siswa tidak valid untuk dimuat.');
       return;
     }
 
@@ -59,8 +65,6 @@ const [selectedSiswaId, setSelectedSiswaId] = useState<number | null>(null);
       const guruUrl = route?.('api.guru') || '/api/guru';
       const waliUrl = route?.('api.walisiswa') || '/api/walisiswa';
 
-      console.log('🌐 Fetching:', { siswaUrl, guruUrl, waliUrl });
-
       const [siswaResponse, guruResponse, waliResponse] = await Promise.all([
         fetchApi<APIResponse<Siswa>>(siswaUrl),
         fetchApi<APIPaginateResponse<Guru>>(guruUrl),
@@ -68,7 +72,7 @@ const [selectedSiswaId, setSelectedSiswaId] = useState<number | null>(null);
       ]);
 
       if (!siswaResponse || !siswaResponse.data) {
-        throw new Error('Data siswa tidak ditemukan');
+        throw new Error('Data siswa tidak dapat ditemukan atau gagal dimuat.');
       }
 
       setDataGuru(guruResponse.data || []);
@@ -83,7 +87,7 @@ const [selectedSiswaId, setSelectedSiswaId] = useState<number | null>(null);
             formattedDate = date.toISOString().split('T')[0];
           }
         } catch (dateError) {
-          console.warn('Error formatting date:', dateError);
+          console.warn('Gagal memformat tanggal lahir:', dateError);
         }
       }
 
@@ -100,14 +104,13 @@ const [selectedSiswaId, setSelectedSiswaId] = useState<number | null>(null);
         ortu_id: siswa.ortu_id || -1,
       });
     } catch (error: any) {
-      console.error('❌ Error loading data:', error);
-      setError(error.message || 'Gagal memuat data siswa');
+      console.error('Terjadi kesalahan saat memuat data:', error);
+      setError(error.message || 'Gagal memuat data dari server.');
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔑 Load data tiap kali modal dibuka
   useEffect(() => {
     if (open && id) {
       loadData();
@@ -123,32 +126,41 @@ const [selectedSiswaId, setSelectedSiswaId] = useState<number | null>(null);
       const updateUrl = route?.('admin.siswa.update', { siswa: id }) || `/admin/siswa/${id}`;
 
       await fetchApi(updateUrl, {
-  method: 'POST',
-  data: {
-    ...data,
-    _method: 'PUT',
-    _token: (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content,
-  },
-});
+        method: 'POST',
+        data: {
+          ...data,
+          _method: 'PUT',
+          _token: (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content,
+        },
+      });
 
-
-
-      onOpenChange(false);
+      onUpdateSuccess(); // Memicu refresh data di komponen induk
+      onOpenChange(false); // Menutup modal setelah berhasil
     } catch (error: any) {
-      console.error('❌ Failed to update siswa data:', error);
-
+      console.error('Gagal memperbarui data siswa:', error);
       if (error.errors) {
         setErrors(error.errors);
       } else {
-        setError(error.message || 'Gagal memperbarui data siswa');
+        setError(error.message || 'Terjadi kesalahan saat menyimpan data.');
       }
     } finally {
       setProcessing(false);
     }
   };
+  
+  // Fungsi untuk menangani penutupan modal dan mereset state
+  const handleOpenChange = (isOpen: boolean) => {
+      onOpenChange(isOpen);
+      if (!isOpen) {
+        // Reset state ke kondisi awal jika modal ditutup
+        setData(initialDataState);
+        setError(null);
+        setErrors({});
+      }
+    };
 
-    return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-screen overflow-y-auto sm:max-w-[625px]">
         <DialogHeader>
           <DialogTitle>Edit Data Siswa</DialogTitle>
@@ -160,7 +172,6 @@ const [selectedSiswaId, setSelectedSiswaId] = useState<number | null>(null);
         {loading ? (
           <div className="py-12 text-center">
             <p>Memuat data...</p>
-            <p className="text-sm text-gray-500">ID: {id}</p>
           </div>
         ) : error ? (
           <div className="py-12 text-center text-red-600">
@@ -169,192 +180,187 @@ const [selectedSiswaId, setSelectedSiswaId] = useState<number | null>(null);
             <Button
               variant="outline"
               className="mt-4"
-              onClick={() => {
-                setError(null);
-                loadData();
-              }}
+              onClick={loadData}
             >
               Coba Lagi
             </Button>
           </div>
         ) : (
-                    <form onSubmit={submit}>
-                        <div className="space-y-4 py-4">
-                            {/* NIK */}
-                            <div className="flex flex-col space-y-2">
-                                <label htmlFor="edit-nik" className="font-medium">NIK</label>
-                                <Input 
-                                    id="edit-nik" 
-                                    placeholder="Masukan NIK" 
-                                    value={data.nik} 
-                                    onChange={(e) => handleSetData('nik', e.target.value)} 
-                                    required 
-                                />
-                                {errors.nik && <p className="text-sm text-red-500">{errors.nik}</p>}
-                            </div>
+          <form onSubmit={submit}>
+            <div className="space-y-4 py-4">
+              {/* NIK */}
+              <div className="flex flex-col space-y-2">
+                  <label htmlFor="edit-nik" className="font-medium">NIK</label>
+                  <Input 
+                      id="edit-nik" 
+                      placeholder="Masukan NIK" 
+                      value={data.nik} 
+                      onChange={(e) => handleSetData('nik', e.target.value)} 
+                      required 
+                  />
+                  {errors.nik && <p className="text-sm text-red-500">{errors.nik}</p>}
+              </div>
 
-                            
+              {/* Nama & Jenis Kelamin */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="flex flex-col space-y-2">
+                      <label htmlFor="edit-nama" className="font-medium">Nama Lengkap</label>
+                      <Input 
+                          id="edit-nama" 
+                          placeholder="Masukan nama lengkap" 
+                          value={data.name} 
+                          onChange={(e) => handleSetData('name', e.target.value)} 
+                          required 
+                      />
+                      {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+                  </div>
+                  <div className="flex flex-col space-y-2">
+                      <label htmlFor="edit-jenisKelamin" className="font-medium">Jenis Kelamin</label>
+                      <Select 
+                          value={data.jenis_kelamin} 
+                          onValueChange={(val) => handleSetData('jenis_kelamin', val as 'pria' | 'wanita')} 
+                          required
+                      >
+                          <SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger>
+                          <SelectContent>
+                              <SelectItem value="pria">Pria</SelectItem>
+                              <SelectItem value="wanita">Wanita</SelectItem>
+                          </SelectContent>
+                      </Select>
+                  </div>
+              </div>
+              
+              {/* Tempat & Tanggal Lahir */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                   <div className="flex flex-col space-y-2">
+                      <label htmlFor="edit-tempatLahir" className="font-medium">Tempat Lahir</label>
+                      <Input 
+                          id="edit-tempatLahir" 
+                          placeholder="Masukan Tempat Lahir" 
+                          value={data.tempat_lahir} 
+                          onChange={(e) => handleSetData('tempat_lahir', e.target.value)} 
+                          required 
+                      />
+                      {errors.tempat_lahir && <p className="text-sm text-red-500">{errors.tempat_lahir}</p>}
+                  </div>
+                  <div className="flex flex-col space-y-2">
+                      <label htmlFor="edit-tanggalLahir" className="font-medium">Tanggal Lahir</label>
+                      <Input 
+                          type="date" 
+                          id="edit-tanggalLahir" 
+                          value={data.tanggal_lahir} 
+                          className="block w-full" 
+                          onChange={(e) => handleSetData('tanggal_lahir', e.target.value)} 
+                          required 
+                      />
+                      {errors.tanggal_lahir && <p className="text-sm text-red-500">{errors.tanggal_lahir}</p>}
+                  </div>
+              </div>
 
-                            {/* Nama & Jenis Kelamin */}
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div className="flex flex-col space-y-2">
-                                    <label htmlFor="edit-nama" className="font-medium">Nama Lengkap</label>
-                                    <Input 
-                                        id="edit-nama" 
-                                        placeholder="Masukan nama lengkap" 
-                                        value={data.name} 
-                                        onChange={(e) => handleSetData('name', e.target.value)} 
-                                        required 
-                                    />
-                                    {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
-                                </div>
-                                <div className="flex flex-col space-y-2">
-                                    <label htmlFor="edit-jenisKelamin" className="font-medium">Jenis Kelamin</label>
-                                    <Select 
-                                        value={data.jenis_kelamin} 
-                                        onValueChange={(val) => handleSetData('jenis_kelamin', val as 'pria' | 'wanita')} 
-                                        required
-                                    >
-                                        <SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="pria">Pria</SelectItem>
-                                            <SelectItem value="wanita">Wanita</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            
-                            {/* Tempat & Tanggal Lahir */}
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                 <div className="flex flex-col space-y-2">
-                                    <label htmlFor="edit-tempatLahir" className="font-medium">Tempat Lahir</label>
-                                    <Input 
-                                        id="edit-tempatLahir" 
-                                        placeholder="Masukan Tempat Lahir" 
-                                        value={data.tempat_lahir} 
-                                        onChange={(e) => handleSetData('tempat_lahir', e.target.value)} 
-                                        required 
-                                    />
-                                    {errors.tempat_lahir && <p className="text-sm text-red-500">{errors.tempat_lahir}</p>}
-                                </div>
-                                <div className="flex flex-col space-y-2">
-                                    <label htmlFor="edit-tanggalLahir" className="font-medium">Tanggal Lahir</label>
-                                    <Input 
-                                        type="date" 
-                                        id="edit-tanggalLahir" 
-                                        value={data.tanggal_lahir} 
-                                        className="block w-full" 
-                                        onChange={(e) => handleSetData('tanggal_lahir', e.target.value)} 
-                                        required 
-                                    />
-                                    {errors.tanggal_lahir && <p className="text-sm text-red-500">{errors.tanggal_lahir}</p>}
-                                </div>
-                            </div>
+              {/* Alamat */}
+              <div className="flex flex-col space-y-2">
+                  <label htmlFor="edit-alamat" className="font-medium">Alamat</label>
+                  <Textarea 
+                      id="edit-alamat" 
+                      placeholder="Masukan alamat lengkap" 
+                      rows={3} 
+                      value={data.alamat} 
+                      onChange={(e) => handleSetData('alamat', e.target.value)} 
+                      required 
+                  />
+                  {errors.alamat && <p className="text-sm text-red-500">{errors.alamat}</p>}
+              </div>
 
-                            {/* Alamat */}
-                            <div className="flex flex-col space-y-2">
-                                <label htmlFor="edit-alamat" className="font-medium">Alamat</label>
-                                <Textarea 
-                                    id="edit-alamat" 
-                                    placeholder="Masukan alamat lengkap" 
-                                    rows={3} 
-                                    value={data.alamat} 
-                                    onChange={(e) => handleSetData('alamat', e.target.value)} 
-                                    required 
-                                />
-                                {errors.alamat && <p className="text-sm text-red-500">{errors.alamat}</p>}
-                            </div>
+              {/* Angkatan & Peran */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="flex flex-col space-y-2">
+                      <label htmlFor="edit-angkatan" className="font-medium">Angkatan</label>
+                      <Input 
+                          id="edit-angkatan" 
+                          placeholder="Contoh: 2025" 
+                          type="number" 
+                          value={data.angkatan.toString()} 
+                          onChange={(e) => handleSetData('angkatan', parseInt(e.target.value) || new Date().getFullYear())} 
+                          required 
+                      />
+                         {errors.angkatan && <p className="text-sm text-red-500">{errors.angkatan}</p>}
+                  </div>
+                  <div className="flex flex-col space-y-2">
+                      <label htmlFor="edit-peran" className="font-medium">Jalur</label>
+                      <Select 
+                          value={data.siswa_role} 
+                          onValueChange={(ev) => handleSetData('siswa_role', ev as 'regular' | 'pengurus')} 
+                          required
+                      >
+                          <SelectTrigger><SelectValue placeholder="Regular" /></SelectTrigger>
+                          <SelectContent>
+                              <SelectItem value="regular">Regular</SelectItem>
+                              <SelectItem value="pengurus">Beasiswa</SelectItem>
+                          </SelectContent>
+                      </Select>
+                  </div>
+              </div>
 
-                            {/* Angkatan & Peran */}
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div className="flex flex-col space-y-2">
-                                    <label htmlFor="edit-angkatan" className="font-medium">Angkatan</label>
-                                    <Input 
-                                        id="edit-angkatan" 
-                                        placeholder="Contoh: 2025" 
-                                        type="number" 
-                                        value={data.angkatan.toString()} 
-                                        onChange={(e) => handleSetData('angkatan', parseInt(e.target.value) || new Date().getFullYear())} 
-                                        required 
-                                    />
-                                     {errors.angkatan && <p className="text-sm text-red-500">{errors.angkatan}</p>}
-                               </div>
-                                <div className="flex flex-col space-y-2">
-                                    <label htmlFor="edit-peran" className="font-medium">Jalur</label>
-                                    <Select 
-                                        value={data.siswa_role} 
-                                        onValueChange={(ev) => handleSetData('siswa_role', ev as 'regular' | 'pengurus')} 
-                                        required
-                                    >
-                                        <SelectTrigger><SelectValue placeholder="Regular" /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="regular">Regular</SelectItem>
-                                            <SelectItem value="pengurus">Beasiswa</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
+              {/* Guru & Wali */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="flex flex-col space-y-2">
+                      <label htmlFor="edit-guru" className="font-medium">Wali Kelas</label>
+                      <Select 
+                          value={data.guru_id > 0 ? data.guru_id.toString() : ""} 
+                          onValueChange={(value) => handleSetData('guru_id', parseInt(value) || -1)} 
+                          required
+                      >
+                          <SelectTrigger><SelectValue placeholder="Cari dan pilih guru..." /></SelectTrigger>
+                          <SelectContent>
+                              {dataGuru.length > 0 ? (
+                                  dataGuru.map((guru) => (
+                                      <SelectItem key={guru.id} value={guru.id.toString()}>
+                                          {guru.name}
+                                      </SelectItem>
+                                  ))
+                              ) : (
+                                  <SelectItem value="-1" disabled>Tidak ada data guru</SelectItem>
+                              )}
+                          </SelectContent>
+                      </Select>
+                      {errors.guru_id && <p className="text-sm text-red-500">{errors.guru_id}</p>}
+                  </div>
+                  <div className="flex flex-col space-y-2">
+                      <label htmlFor="edit-wali" className="font-medium">Nama Orang Tua / Wali</label>
+                      <Select 
+                          value={data.ortu_id > 0 ? data.ortu_id.toString() : ""} 
+                          onValueChange={(value) => handleSetData('ortu_id', parseInt(value) || -1)} 
+                          required
+                      >
+                           <SelectTrigger><SelectValue placeholder="Cari dan pilih wali..." /></SelectTrigger>
+                           <SelectContent>
+                              {dataWali.length > 0 ? (
+                                  dataWali.map((wali) => (
+                                      <SelectItem key={wali.id} value={wali.id.toString()}>
+                                          {wali.name}
+                                      </SelectItem>
+                                  ))
+                              ) : (
+                                  <SelectItem value="-1" disabled>Tidak ada data wali</SelectItem>
+                              )}
+                           </SelectContent>
+                      </Select>
+                      {errors.ortu_id && <p className="text-sm text-red-500">{errors.ortu_id}</p>}
+                  </div>
+              </div>
+            </div>
 
-                            {/* Guru & Wali */}
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div className="flex flex-col space-y-2">
-                                    <label htmlFor="edit-guru" className="font-medium">Wali Kelas</label>
-                                    <Select 
-                                        value={data.guru_id > 0 ? data.guru_id.toString() : ""} 
-                                        onValueChange={(value) => handleSetData('guru_id', parseInt(value) || -1)} 
-                                        required
-                                    >
-                                        <SelectTrigger><SelectValue placeholder="Cari dan pilih guru..." /></SelectTrigger>
-                                        <SelectContent>
-                                            {dataGuru.length > 0 ? (
-                                                dataGuru.map((guru) => (
-                                                    <SelectItem key={guru.id} value={guru.id.toString()}>
-                                                        {guru.name}
-                                                    </SelectItem>
-                                                ))
-                                            ) : (
-                                                <SelectItem value="-1" disabled>Tidak ada data guru</SelectItem>
-                                            )}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.guru_id && <p className="text-sm text-red-500">{errors.guru_id}</p>}
-                                </div>
-                                <div className="flex flex-col space-y-2">
-                                    <label htmlFor="edit-wali" className="font-medium">Nama Orang Tua / Wali</label>
-                                    <Select 
-                                        value={data.ortu_id > 0 ? data.ortu_id.toString() : ""} 
-                                        onValueChange={(value) => handleSetData('ortu_id', parseInt(value) || -1)} 
-                                        required
-                                    >
-                                         <SelectTrigger><SelectValue placeholder="Cari dan pilih wali..." /></SelectTrigger>
-                                         <SelectContent>
-                                            {dataWali.length > 0 ? (
-                                                dataWali.map((wali) => (
-                                                    <SelectItem key={wali.id} value={wali.id.toString()}>
-                                                        {wali.name}
-                                                    </SelectItem>
-                                                ))
-                                            ) : (
-                                                <SelectItem value="-1" disabled>Tidak ada data wali</SelectItem>
-                                            )}
-                                         </SelectContent>
-                                    </Select>
-                                    {errors.ortu_id && <p className="text-sm text-red-500">{errors.ortu_id}</p>}
-                                </div>
-                            </div>
-                        </div>
-
-                        <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                                Batal
-                            </Button>
-                            <Button type="submit" disabled={processing}>
-                                {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                )}
-            </DialogContent>
-        </Dialog>
-    );
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Batal
+              </Button>
+              <Button type="submit" disabled={processing}>
+                {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
 }

@@ -13,9 +13,7 @@ use Illuminate\Validation\Rule;
 
 class GuruManagerController extends Controller
 {
-    /**
-     * Tampilkan halaman list guru
-     */
+    // ... (fungsi index, api, detail, dan store tetap sama) ...
     public function index(Request $request)
     {
         $prop = User::where('role', 'guru')
@@ -27,9 +25,6 @@ class GuruManagerController extends Controller
         ]);
     }
 
-    /**
-     * API untuk list guru
-     */
     public function api(Request $request)
     {
         $guru = User::where('role', 'guru')
@@ -39,9 +34,6 @@ class GuruManagerController extends Controller
         return response()->json($guru);
     }
 
-    /**
-     * API detail guru
-     */
     public function detail(User $guru)
     {
         if ($guru->role !== 'guru') {
@@ -57,9 +49,6 @@ class GuruManagerController extends Controller
         ]);
     }
 
-    /**
-     * Store guru baru
-     */
     public function store(GuruStoreRequest $request)
     {
         $validated = $request->validated();
@@ -70,22 +59,29 @@ class GuruManagerController extends Controller
         $validated['username'] = User::generateUsername($validated['name'], 'guru');
         $validated['role'] = 'guru';
 
+        if (isset($validated['jenis_kelamin'])) {
+            $validated['jenis_kelamin'] = ($validated['jenis_kelamin'] === 'pria') ? 'L' : 'P';
+        }
+
         User::create($validated);
 
         return redirect()->route('admin.guru.index')->with('success', 'Guru berhasil ditambahkan');
     }
+
 
     /**
      * Update guru
      */
     public function update(Request $request, $id)
     {
-        // Ambil guru dari tabel users
         $guru = User::where('id', $id)->where('role', 'guru')->firstOrFail();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'jenis_kelamin' => 'required|in:laki-laki,perempuan',
+            // --- [PERBAIKAN] ---
+            // Sesuaikan aturan validasi agar cocok dengan nilai yang dikirim dari frontend ('pria'/'wanita').
+            'jenis_kelamin' => 'required|in:pria,wanita',
+            // --- [AKHIR PERBAIKAN] ---
             'phone' => [
                 'required',
                 'string',
@@ -93,6 +89,7 @@ class GuruManagerController extends Controller
                 Rule::unique('users', 'phone')->ignore($guru->id),
             ],
         ]);
+        
 
         $guru->update($validated);
 
@@ -102,9 +99,7 @@ class GuruManagerController extends Controller
         ]);
     }
 
-    /**
-     * Hapus guru
-     */
+    // ... (fungsi destroy, APIshowPelajaran, dan APIshowSiswaDidik tetap sama) ...
     public function destroy($id)
     {
         $guru = User::where('id', $id)->where('role', 'guru')->firstOrFail();
@@ -115,9 +110,6 @@ class GuruManagerController extends Controller
         ]);
     }
 
-    /**
-     * API menampilkan pelajaran yang diampu guru
-     */
     public function APIshowPelajaran(User $guru)
     {
         if ($guru->role !== 'guru') {
@@ -136,9 +128,6 @@ class GuruManagerController extends Controller
         ], $count > 0 ? 200 : 404);
     }
 
-    /**
-     * API menampilkan siswa didik guru
-     */
     public function APIshowSiswaDidik(User $guru)
     {
         if ($guru->role !== 'guru') {
@@ -157,3 +146,4 @@ class GuruManagerController extends Controller
         ], $count > 0 ? 200 : 404);
     }
 }
+

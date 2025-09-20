@@ -19,25 +19,23 @@ class NilaiController extends Controller
         
     }
 
-   public function generatePDF(Int $nis)
+public function generatePDF(Int $nis)
 {
-    // 1. Tambahkan 'nilai.detail' untuk memuat data UH, PTS, PAS
-    $siswa = Siswa::where('nis', $nis)->with('nilai.pelajaran', 'nilai.detail')->first();
+    // Ambil siswa beserta nilai, detail nilai, dan guru (wali kelas)
+    $siswa = Siswa::where('nis', $nis)
+        ->with(['nilai.pelajaran', 'nilai.detail', 'guru'])
+        ->first();
 
-    if(!$siswa) {
-        // Sebaiknya kembalikan halaman error atau pesan yang jelas
+    if (!$siswa) {
         abort(404, 'Siswa dengan NIS tersebut tidak ditemukan.');
     }
 
-    // 2. Proses data nilai untuk ditampilkan di PDF
+    // Proses data nilai
     $processedNilai = $siswa->nilai->map(function ($nilai) {
-        // Cari nilai UH, PTS, PAS dari relasi 'detail'
-        // Jika tidak ada detail, nilai default adalah 0
         $uh = $nilai->detail->firstWhere('jenis', 'UH')->nilai ?? 0;
         $pts = $nilai->detail->firstWhere('jenis', 'PTS')->nilai ?? 0;
         $pas = $nilai->detail->firstWhere('jenis', 'PAS')->nilai ?? 0;
 
-        // Hitung nilai akhir (contoh: rata-rata, bisa disesuaikan)
         $nilaiAkhir = round(($uh + $pts + $pas) / 3, 2);
 
         return [
@@ -50,26 +48,31 @@ class NilaiController extends Controller
         ];
     });
 
-    // 3. Hitung rata-rata keseluruhan dari nilai akhir
+    // Hitung rata-rata keseluruhan
     $rataRataKeseluruhan = $processedNilai->avg('nilai_akhir');
 
+    // Data untuk dikirim ke view
     $data = [
         'title'    => 'Transkrip Nilai',
         'date'     => date('d/m/Y'),
         'student'  => [
             'name'       => $siswa->name,
             'nis'        => $siswa->nis,
-            'birth_info' => $siswa->tempat_lahir . '/' . $siswa->tanggal_lahir,
+            'birth_info' => $siswa->tempat_lahir . ' / ' . $siswa->tanggal_lahir,
             'gender'     => $siswa->jenis_kelamin,
         ],
-        'subjects' => $processedNilai, // Gunakan data yang sudah diproses
-        'average'  => round($rataRataKeseluruhan, 2), // Gunakan rata-rata yang baru
+        'subjects' => $processedNilai,
+        'average'  => round($rataRataKeseluruhan, 2),
+        'walikelas' => $siswa->guru ? $siswa->guru->name : '-', // ✅ wali kelas
     ];
 
     $pdf = PDF::loadView('transcript', $data);
     $pdf->setPaper('A4', 'portrait');
+
     return $pdf->download("transkrip-nilai-{$nis}.pdf");
 }
+
+
 
     public function APIsiswa(Siswa $siswa)
     {

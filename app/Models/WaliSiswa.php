@@ -7,7 +7,7 @@ class WaliSiswa extends User
 {
     use HasParent;
     
-    protected $fillable = ['name', 'phone_number','alamat', 'jenis_kelamin'];
+    protected $fillable = ['name', 'phone','alamat', 'jenis_kelamin'];
 
     public function anak()
     {

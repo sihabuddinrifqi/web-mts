@@ -62,7 +62,7 @@ export default function Header() {
       {/* Konten teks */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full text-center text-white p-4">
         <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4">
-          Membentuk Generasi Cerdas & Berakhlak Mulia
+          Membentuk Generasi Qur'ani & Unggul
         </h1>
         <p className="text-lg md:text-xl max-w-3xl mx-auto">
           Selamat datang di portal resmi MTs Ash-Sholihin. Temukan informasi terbaru seputar kegiatan belajar mengajar dan prestasi siswa kami.

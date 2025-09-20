@@ -73,7 +73,6 @@ export default function DataTableSiswaWali({ siswaData, filters }: Props) {
             <TableRow className="bg-muted">
               <TableHead>NIS</TableHead>
               <TableHead>Nama</TableHead>
-              <TableHead>Email</TableHead>
               <TableHead>Transkrip Nilai</TableHead>
               <TableHead>Presensi</TableHead>
             </TableRow>
@@ -84,7 +83,6 @@ export default function DataTableSiswaWali({ siswaData, filters }: Props) {
                 <TableRow key={siswa.id}>
                   <TableCell>{siswa.nis}</TableCell>
                   <TableCell>{siswa.name}</TableCell>
-                  <TableCell>{siswa.email}</TableCell>
                   <TableCell>
                     <TranscriptViewWali id={siswa.id} />
                   </TableCell>
