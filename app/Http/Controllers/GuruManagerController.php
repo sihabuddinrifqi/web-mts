@@ -17,6 +17,7 @@ class GuruManagerController extends Controller
     public function index(Request $request)
     {
         $prop = User::where('role', 'guru')
+            ->withCount('siswaDidik') 
             ->paginate(10)
             ->appends($request->all());
 
@@ -59,10 +60,6 @@ class GuruManagerController extends Controller
         $validated['username'] = User::generateUsername($validated['name'], 'guru');
         $validated['role'] = 'guru';
 
-        if (isset($validated['jenis_kelamin'])) {
-            $validated['jenis_kelamin'] = ($validated['jenis_kelamin'] === 'pria') ? 'L' : 'P';
-        }
-
         User::create($validated);
 
         return redirect()->route('admin.guru.index')->with('success', 'Guru berhasil ditambahkan');
@@ -82,11 +79,11 @@ class GuruManagerController extends Controller
             // Sesuaikan aturan validasi agar cocok dengan nilai yang dikirim dari frontend ('pria'/'wanita').
             'jenis_kelamin' => 'required|in:pria,wanita',
             // --- [AKHIR PERBAIKAN] ---
+            'pendidikan_terakhir' => 'nullable|string|max:255',
             'phone' => [
                 'required',
                 'string',
                 'max:20',
-                Rule::unique('users', 'phone')->ignore($guru->id),
             ],
         ]);
         

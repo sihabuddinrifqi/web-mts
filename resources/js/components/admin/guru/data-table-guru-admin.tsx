@@ -76,7 +76,7 @@ export default function DataTableGuruAdmin({ siswaData, filters }: Props) {
                                 <TableRow key={siswa.id}>
                                     <TableCell>{(siswaData.current_page - 1) * siswaData.per_page + index + 1}</TableCell>
                                     <TableCell>{siswa.name}</TableCell>
-                                    <TableCell>{siswa.anak?.length}</TableCell>
+                                    <TableCell>{Number(siswa.siswa_didik_count)}</TableCell>
                                     <TableCell>{siswa.phone}</TableCell>
                                     <TableCell>
                                         {siswa.username as string} | {siswa.first_password as string}

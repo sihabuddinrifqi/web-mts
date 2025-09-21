@@ -3,10 +3,12 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import formatDate from '@/lib/format-date';
 import { AdminIzinPulangResponse } from '@/types/admin/izin';
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { Eye, Image } from 'lucide-react';
 import { IzinActionAdmin } from './izin-action-admin';
 
 type Props = {
@@ -53,6 +55,7 @@ export default function DataTableIzinAdmin({ siswaData, filters }: Props) {
                             <TableHead>Nama Siswa</TableHead>
                             <TableHead>Pelapor (Wali)</TableHead>
                             <TableHead>Alasan</TableHead>
+                            <TableHead>Foto Bukti</TableHead>
                             <TableHead>Tanggal Pulang</TableHead>
                             <TableHead>Tanggal Kembali</TableHead>
                             <TableHead>Status</TableHead>
@@ -72,6 +75,33 @@ export default function DataTableIzinAdmin({ siswaData, filters }: Props) {
                                     <TableCell>{data.target_siswa?.name}</TableCell>
                                     <TableCell>{data.created_by?.name}</TableCell>
                                     <TableCell>{data.message}</TableCell>
+                                    <TableCell>
+                                        {data.photo ? (
+                                            <Dialog>
+                                                <DialogTrigger asChild>
+                                                    <Button variant="outline" size="sm">
+                                                        <Eye className="h-4 w-4 mr-1" />
+                                                        Lihat Foto
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <DialogContent className="max-w-2xl">
+                                                    <div className="flex flex-col items-center space-y-4">
+                                                        <h3 className="text-lg font-semibold">Foto Bukti Pendukung</h3>
+                                                        <img
+                                                            src={`/${data.photo}`}
+                                                            alt="Bukti pendukung izin"
+                                                            className="max-w-full max-h-96 object-contain rounded-lg border"
+                                                        />
+                                                    </div>
+                                                </DialogContent>
+                                            </Dialog>
+                                        ) : (
+                                            <div className="flex items-center text-gray-500 text-sm">
+                                                <Image className="h-4 w-4 mr-1" />
+                                                Tidak ada foto
+                                            </div>
+                                        )}
+                                    </TableCell>
                                     <TableCell>{formatDate(data.tanggal_pulang)}</TableCell>
                                     <TableCell>{formatDate(data.tanggal_kembali)}</TableCell>
                                     <TableCell>

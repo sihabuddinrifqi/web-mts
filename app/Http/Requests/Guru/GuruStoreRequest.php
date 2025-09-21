@@ -26,7 +26,7 @@ class GuruStoreRequest extends FormRequest
             'email' => 'nullable|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'name' => 'required|string|max:255',
-            
+            'pendidikan_terakhir' => 'nullable|string|max:255',
             'jenis_kelamin' => ['required', Rule::in(['pria', 'wanita'])],
         ];
     }

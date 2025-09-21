@@ -1,188 +1,215 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { SearchableMultiSelect } from '@/components/ui/searchable-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { fetchApi } from '@/lib/utils';
 import { Guru } from '@/types/walisiswa/anak';
+import { Siswa } from '@/types/admin/siswa';
 import { APIPaginateResponse, APIResponse } from '@/types/response';
-import { FormEventHandler, useState, Dispatch, SetStateAction, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
+import { FormEventHandler, useEffect, useState, Dispatch, SetStateAction } from 'react';
 
-// Tipe data pelajaran dari API
-interface Pelajaran {
-    id: number;
-    nama_pelajaran: string;
-    pengampu_id: number;
-    semester: number;
-    angkatan: string;
-}
-
-// Tipe data yang dikirim ke server
-// [PERBAIKAN 2] Menambahkan index signature untuk memenuhi constraint 'FormDataType' dari Inertia
-interface PelajaranRequestType {
-    nama_pelajaran: string;
-    pengampu_id: number;
-    semester: number;
-    angkatan: string;
-    [key: string]: any; // Menambahkan ini untuk kompatibilitas
-}
-
-// [PERBAIKAN 1] Menambahkan kembali onUpdateSuccess ke dalam props
 type PelajaranFormEditAdminProps = {
-    id: number;
-    open: boolean;
-    onOpenChange: Dispatch<SetStateAction<boolean>>;
-    onUpdateSuccess: () => void;
+  id: number;
+  open: boolean;
+  onOpenChange: Dispatch<SetStateAction<boolean>>;
+  onUpdateSuccess: () => void;
 };
 
-export default function PelajaranFormEditAdmin({ id, open, onOpenChange, onUpdateSuccess }: PelajaranFormEditAdminProps) {
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [dataGuru, setDataGuru] = useState<Guru[]>([]);
-
-    const { data, setData, patch, processing, errors, reset } = useForm<PelajaranRequestType>({
-        nama_pelajaran: '',
-        pengampu_id: -1,
-        semester: 1,
-        angkatan: '',
-    });
-
-    // Fungsi untuk memuat data awal (hanya dijalankan saat modal dibuka)
-    const loadInitialData = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const pelajaranUrl = (window as any).route('api.detail.pelajaran', { pelajaran: id });
-            const guruUrl = (window as any).route('api.guru');
-
-            const [pelajaranRes, guruRes] = await Promise.all([
-                fetch(pelajaranUrl),
-                fetch(guruUrl)
-            ]);
-
-            if (!pelajaranRes.ok) throw new Error(`Gagal memuat data pelajaran (Status: ${pelajaranRes.status})`);
-            if (!guruRes.ok) throw new Error(`Gagal memuat data guru (Status: ${guruRes.status})`);
-
-            const pelajaranResp: APIResponse<Pelajaran> = await pelajaranRes.json();
-            const guruResp: APIPaginateResponse<Guru> = await guruRes.json();
-
-            setDataGuru(guruResp.data);
-            
-            setData({
-                nama_pelajaran: pelajaranResp.data.nama_pelajaran || '',
-                pengampu_id: pelajaranResp.data.pengampu_id || -1,
-                semester: pelajaranResp.data.semester || 1,
-                angkatan: pelajaranResp.data.angkatan || '',
-            });
-
-        } catch (error: any) {
-            setError(error.message || 'Gagal memuat data awal.');
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    useEffect(() => {
-        if (open && id) {
-            loadInitialData();
-        }
-    }, [open, id]);
-
-    // Fungsi submit menggunakan metode 'patch' dari useForm
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-        patch((window as any).route('admin.pelajaran.update', { pelajaran: id }), {
-            onSuccess: () => {
-                onUpdateSuccess(); // Panggil callback sukses
-                onOpenChange(false);
-            },
-            onError: (err) => {
-                console.error('Gagal memperbarui data pelajaran:', err);
-                setError('Gagal memperbarui data. Periksa kembali isian Anda.');
-            }
-        });
-    };
-    
-    // Fungsi untuk mereset form saat modal ditutup
-    const handleOpenChange = (isOpen: boolean) => {
-        if (!isOpen) {
-            reset(); // Reset form dan error saat modal ditutup
-        }
-        onOpenChange(isOpen);
-    };
-
-    return (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="sm:max-w-md md:max-w-lg">
-                <DialogHeader>
-                    <DialogTitle>Edit Data Pembelajaran</DialogTitle>
-                    <DialogDescription>
-                        Ubah informasi terkait mata pelajaran yang telah terdaftar di sistem.
-                    </DialogDescription>
-                </DialogHeader>
-
-                {loading ? (
-                    <div className="py-12 text-center">Memuat data...</div>
-                ) : error ? (
-                    <div className="py-12 text-center text-red-600">
-                        <p className="font-semibold">Terjadi Kesalahan:</p>
-                        <p className="text-sm">{error}</p>
-                        <Button variant="outline" size="sm" className="mt-4" onClick={loadInitialData}>Coba Lagi</Button>
-                    </div>
-                ) : (
-                    <form onSubmit={submit}>
-                        <div className="space-y-4 py-4">
-                            <div className="flex flex-col space-y-2">
-                                <label htmlFor="nama-pelajaran" className="text-sm font-medium">Nama Mata Pelajaran</label>
-                                <Input id="nama-pelajaran" value={data.nama_pelajaran} onChange={(e) => setData('nama_pelajaran', e.target.value)} required />
-                                {errors.nama_pelajaran && <p className="text-sm text-red-500">{errors.nama_pelajaran}</p>}
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="flex flex-col space-y-2">
-                                    <label htmlFor="pengampu" className="text-sm font-medium">Pengampu</label>
-                                    <Select value={data.pengampu_id > 0 ? data.pengampu_id.toString() : ""} onValueChange={(val) => setData('pengampu_id', parseInt(val))} required>
-                                        <SelectTrigger><SelectValue placeholder="Pilih Pengampu" /></SelectTrigger>
-                                        <SelectContent>
-                                            {dataGuru.map(guru => (
-                                                <SelectItem key={guru.id} value={guru.id.toString()}>{guru.name}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.pengampu_id && <p className="text-sm text-red-500">{errors.pengampu_id}</p>}
-                                </div>
-
-                                <div className="flex flex-col space-y-2">
-                                    <label htmlFor="semester" className="text-sm font-medium">Semester</label>
-                                    <Select value={data.semester.toString()} onValueChange={(val) => setData('semester', parseInt(val))} required>
-                                        <SelectTrigger><SelectValue placeholder="Pilih Semester" /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="1">Semester 1</SelectItem>
-                                            <SelectItem value="2">Semester 2</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.semester && <p className="text-sm text-red-500">{errors.semester}</p>}
-                                </div>
-                            </div>
-                            
-                            <div className="flex flex-col space-y-2">
-                                <label htmlFor="angkatan" className="text-sm font-medium">Untuk Angkatan</label>
-                                <Input id="angkatan" type="number" placeholder="Contoh: 2025" value={data.angkatan} onChange={(e) => setData('angkatan', e.target.value)} required />
-                                {errors.angkatan && <p className="text-sm text-red-500">{errors.angkatan}</p>}
-                            </div>
-                        </div>
-
-                        <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>
-                            <Button type="submit" disabled={processing}>
-                                {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                )}
-            </DialogContent>
-        </Dialog>
-    );
+/**
+ * Tipe khusus untuk useForm (harus punya index signature supaya Inertia useForm happy)
+ */
+interface PelajaranFormType {
+  nama_pelajaran: string;
+  pengampu_id: number;
+  semester: number;
+  angkatan: string;
+  siswa_ids: number[];
+  [key: string]: any;
 }
 
+export default function PelajaranFormEditAdmin({ id, open, onOpenChange, onUpdateSuccess }: PelajaranFormEditAdminProps) {
+  const [dataGuru, setDataGuru] = useState<Guru[]>([]);
+  const [dataSiswa, setDataSiswa] = useState<Siswa[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const { data, setData, patch, processing, reset } = useForm<PelajaranFormType>({
+    nama_pelajaran: '',
+    pengampu_id: -1,
+    semester: 1,
+    angkatan: '',
+    siswa_ids: [],
+  });
+
+  // load initial pelajaran, guru, dan siswa (berdasarkan angkatan pelajaran)
+  const loadInitialData = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // detail pelajaran
+      const pelajaranUrl = (window as any).route('api.detail.pelajaran', { pelajaran: id }) || `/api/detail/pelajaran/${id}`;
+      const guruUrl = (window as any).route('api.guru') || '/api/guru';
+
+      const [pelajaranRes, guruRes] = await Promise.all([fetch(pelajaranUrl), fetch(guruUrl)]);
+
+      if (!pelajaranRes.ok) throw new Error(`Gagal memuat detail pelajaran (status ${pelajaranRes.status})`);
+      if (!guruRes.ok) throw new Error(`Gagal memuat daftar guru (status ${guruRes.status})`);
+
+      const pelajaranResp: APIResponse<any> = await pelajaranRes.json();
+      const guruResp: APIPaginateResponse<Guru> = await guruRes.json();
+
+      const p = pelajaranResp.data;
+      // set form data
+      setData({
+        nama_pelajaran: p.nama_pelajaran || '',
+        pengampu_id: p.pengampu_id ?? -1,
+        semester: p.semester ?? 1,
+        angkatan: p.angkatan ?? '',
+        siswa_ids: (p.siswa && Array.isArray(p.siswa)) ? p.siswa.map((s: any) => s.id) : (p.siswa_ids || []),
+      });
+
+      setDataGuru(guruResp.data || []);
+
+      // jika ada angkatan, ambil daftar siswa angkatan tsb
+      const angkatan = p.angkatan;
+      if (angkatan) {
+        try {
+          const siswaResp = await fetchApi<APIResponse<Siswa[]>>((window as any).route('api.siswa.angkatan', angkatan) || `/api/siswa/${angkatan}`);
+          setDataSiswa(siswaResp.data || []);
+        } catch (e) {
+          // jangan gagal total hanya karena fetch siswa
+          console.warn('Gagal memuat siswa angkatan:', angkatan, e);
+          setDataSiswa([]);
+        }
+      } else {
+        setDataSiswa([]);
+      }
+    } catch (err: any) {
+      console.error('Gagal load initial data:', err);
+      setError(err.message || 'Gagal memuat data awal.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (open && id) loadInitialData();
+    if (!open) {
+      // reset ketika modal ditutup
+      reset();
+      setDataSiswa([]);
+      setDataGuru([]);
+      setError(null);
+      setLoading(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, id]);
+
+  // saat user mengetik angkatan di input: jika 4 digit, fetch siswa angkatan
+  const handleAngkatanChange = async (val: string) => {
+    setData('angkatan', val);
+    if (val.length !== 4) {
+      setDataSiswa([]);
+      return;
+    }
+
+    try {
+      const siswaResp = await fetchApi<APIResponse<Siswa[]>>((window as any).route('api.siswa.angkatan', val) || `/api/siswa/angkatan/${val}`);
+      setDataSiswa(siswaResp.data || []);
+    } catch (err) {
+      console.warn('Gagal memuat siswa untuk angkatan', val, err);
+      setDataSiswa([]);
+    }
+  };
+
+  const submit: FormEventHandler = (e) => {
+    e.preventDefault();
+    patch((window as any).route('admin.pelajaran.update', { pelajaran: id }) || `/admin/pelajaran/${id}`, {
+      onSuccess: () => {
+        onUpdateSuccess();
+        onOpenChange(false);
+      },
+      onError: (err) => {
+        console.error('Gagal memperbarui pelajaran:', err);
+        setError('Gagal menyimpan perubahan. Periksa masukan Anda.');
+      },
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[625px]">
+        <DialogHeader>
+          <DialogTitle>Edit Data Mata Pelajaran</DialogTitle>
+        </DialogHeader>
+
+        {loading ? (
+          <div className="py-8 text-center">Memuat data...</div>
+        ) : error ? (
+          <div className="py-8 text-center text-red-600">
+            <p className="font-semibold">Terjadi Kesalahan:</p>
+            <p className="text-sm">{error}</p>
+            <Button variant="outline" size="sm" className="mt-4" onClick={loadInitialData}>Coba Lagi</Button>
+          </div>
+        ) : (
+          <form onSubmit={submit}>
+            <div className="space-y-4 py-4">
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium">Nama Mata Pelajaran</label>
+                <Input value={data.nama_pelajaran} onChange={(e) => setData('nama_pelajaran', e.target.value)} required />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col space-y-2">
+                  <label className="text-sm font-medium">Pengampu</label>
+                  <Select value={data.pengampu_id > 0 ? data.pengampu_id.toString() : ''} onValueChange={(v) => setData('pengampu_id', parseInt(v))}>
+                    <SelectTrigger><SelectValue placeholder="Pilih Pengampu" /></SelectTrigger>
+                    <SelectContent>
+                      {dataGuru.map((g) => <SelectItem key={g.id} value={`${g.id}`}>{g.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex flex-col space-y-2">
+                  <label className="text-sm font-medium">Semester</label>
+                  <Select value={data.semester?.toString() ?? '1'} onValueChange={(v) => setData('semester', parseInt(v))}>
+                    <SelectTrigger><SelectValue placeholder="Pilih Semester" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Semester 1</SelectItem>
+                      <SelectItem value="2">Semester 2</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium">Untuk Angkatan</label>
+                <Input type="number" value={data.angkatan} onChange={(e) => handleAngkatanChange(e.target.value)} placeholder="Contoh: 2025" />
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium">Pilih Siswa (berdasarkan angkatan)</label>
+                <SearchableMultiSelect
+                  options={dataSiswa.map((s) => ({ id: s.id, name: s.name }))}
+                  value={data.siswa_ids}
+                  onChange={(v) => setData('siswa_ids', v)}
+                  placeholder="Pilih Siswa"
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>
+              <Button type="submit" disabled={processing}>{processing ? 'Menyimpan...' : 'Simpan Perubahan'}</Button>
+            </DialogFooter>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}

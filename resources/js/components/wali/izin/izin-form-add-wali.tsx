@@ -3,13 +3,14 @@ import { Calendar } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { cn, fetchApi } from '@/lib/utils';
 import { SharedData } from '@/types';
 import { IzinCreateRequest } from '@/types/requests/izin.request';
 import { APIResponse } from '@/types/response';
 import { Siswa } from '@/types/users';
 import { useForm, usePage } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { Plus, Upload, X } from 'lucide-react';
 import { useState } from 'react';
 
 
@@ -19,6 +20,7 @@ export default function IzinFormAddWali() {
     const { data, post, setData, reset } = useForm<IzinCreateRequest>({
         created_by: auth.user.id,
         message: '',
+        photo: null,
         target_siswa_id: -1,
         tanggal_kembali: '',
         tanggal_pulang: '',
@@ -29,6 +31,7 @@ export default function IzinFormAddWali() {
     const [kembaliOpen, setKembaliOpen] = useState(false);
     const [tanggalPulang, setTanggalPulang] = useState<Date | undefined>(undefined);
     const [tanggalKembali, setTanggalKembali] = useState<Date | undefined>(undefined);
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,6 +55,7 @@ export default function IzinFormAddWali() {
                 setOpen(false);
                 setTanggalPulang(undefined);
                 setTanggalKembali(undefined);
+                setPhotoPreview(null);
                 reset();
             }
         });
@@ -95,6 +99,42 @@ export default function IzinFormAddWali() {
         const pulangString = tanggalPulang.toDateString();
         const dateString = date.toDateString();
         return new Date(dateString) < new Date(pulangString);
+    };
+
+    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Hanya file gambar yang diperbolehkan');
+                return;
+            }
+            
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Ukuran file maksimal 5MB');
+                return;
+            }
+
+            setData('photo', file);
+            
+            // Create preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setPhotoPreview(e.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removePhoto = () => {
+        setData('photo', null);
+        setPhotoPreview(null);
+        // Reset file input
+        const fileInput = document.getElementById('photo-upload') as HTMLInputElement;
+        if (fileInput) {
+            fileInput.value = '';
+        }
     };
 
     return (
@@ -145,6 +185,53 @@ export default function IzinFormAddWali() {
                                 onChange={(e) => setData('message', e.target.value)}
                                 required
                             />
+                        </div>
+
+                        <div className="flex flex-col space-y-2">
+                            <label htmlFor="photo-upload" className="text-sm font-medium">
+                                Foto Bukti Pendukung <span className="text-muted-foreground">(Opsional)</span>
+                            </label>
+                            <div className="space-y-2">
+                                {!photoPreview ? (
+                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                                        <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                                        <div className="mt-2">
+                                            <label htmlFor="photo-upload" className="cursor-pointer">
+                                                <span className="text-sm text-gray-600">
+                                                    Klik untuk upload foto atau drag & drop
+                                                </span>
+                                                <input
+                                                    id="photo-upload"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handlePhotoChange}
+                                                    className="hidden"
+                                                />
+                                            </label>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            PNG, JPG, JPEG hingga 5MB
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="relative">
+                                        <img
+                                            src={photoPreview}
+                                            alt="Preview"
+                                            className="w-full h-48 object-cover rounded-lg border"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="sm"
+                                            className="absolute top-2 right-2"
+                                            onClick={removePhoto}
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">

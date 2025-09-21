@@ -27,6 +27,7 @@ class User extends Authenticatable
         'password',
         'phone',
         'jenis_kelamin', 
+        'pendidikan_terakhir',
         'username',
         'role',
         'first_password',
@@ -87,6 +88,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(User::class, 'ortu_id');
     }
+
+    // Relasi khusus guru → siswa
+    public function siswaDidik()
+    {
+        return $this->hasMany(User::class, 'guru_id');
+    }
+
+
+    
 
     /**
      * Relasi ke wali (jika user adalah siswa).

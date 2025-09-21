@@ -13,11 +13,9 @@ class PelajaranManagerController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil data pelajaran dengan relasi pengampu dan hitung jumlah siswa
         $query = Pelajaran::with('pengampu')
-                          ->withCount('siswa as siswa_count');
+            ->withCount('siswa as siswa_count');
 
-        // Terapkan pencarian dan paginasi
         $prop = $this->applySearchAndPaginate($query, $request, ['nama_pelajaran']);
 
         return Inertia::render('admin/pelajaran', [
@@ -68,7 +66,7 @@ class PelajaranManagerController extends Controller
             });
 
             return redirect()->route('admin.pelajaran.index')
-                             ->with('success', 'Pelajaran dan data nilai awal berhasil dibuat.');
+                ->with('success', 'Pelajaran dan data nilai awal berhasil dibuat.');
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -76,10 +74,63 @@ class PelajaranManagerController extends Controller
         }
     }
 
+    public function edit(Pelajaran $pelajaran)
+    {
+        return Inertia::render('admin/pelajaran-edit', [
+            'pelajaran' => $pelajaran->load('pengampu'),
+            'selected_siswa_ids' => $pelajaran->siswa()->pluck('id'),
+            'angkatan' => $pelajaran->siswa()->exists() ? $pelajaran->siswa()->first()->angkatan : null,
+        ]);
+    }
+
     public function update(Request $request, Pelajaran $pelajaran)
     {
-        // Update logic di sini
-        return redirect()->route('admin.pelajaran.index');
+        $validated = $request->validate([
+            'nama_pelajaran' => 'required|string|max:64',
+            'semester' => 'required|integer',
+            'pengampu_id' => 'required|integer',
+            'siswa_ids' => 'nullable|array',
+        ]);
+
+        try {
+            DB::transaction(function () use ($validated, $pelajaran) {
+                // update data dasar pelajaran
+                $pelajaran->update([
+                    'nama_pelajaran' => $validated['nama_pelajaran'],
+                    'semester' => $validated['semester'],
+                    'pengampu_id' => $validated['pengampu_id'],
+                ]);
+
+                // kalau siswa_ids ada di request → update siswa & nilai
+                if (isset($validated['siswa_ids'])) {
+                    // hapus nilai lama
+                    Nilai::where('pelajaran_id', $pelajaran->id)->delete();
+
+                    $nilaiUntukDibuat = [];
+                    foreach ($validated['siswa_ids'] as $siswaId) {
+                        $nilaiUntukDibuat[] = [
+                            'pelajaran_id' => $pelajaran->id,
+                            'siswa_id' => $siswaId,
+                            'semester' => $pelajaran->semester,
+                            'nilai' => 0,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+
+                    if (!empty($nilaiUntukDibuat)) {
+                        Nilai::insert($nilaiUntukDibuat);
+                    }
+                }
+            });
+
+            return redirect()->route('admin.pelajaran.index')
+                ->with('success', 'Pelajaran berhasil diperbarui.');
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memperbarui data.')->withInput();
+        }
     }
 
     public function destroy(Pelajaran $pelajaran)
@@ -96,7 +147,7 @@ class PelajaranManagerController extends Controller
         $search = $request->query('search', '');
 
         if ($search && !empty($searchable)) {
-            $query->where(function($q) use ($search, $searchable) {
+            $query->where(function ($q) use ($search, $searchable) {
                 foreach ($searchable as $field) {
                     $q->orWhere($field, 'like', "%{$search}%");
                 }

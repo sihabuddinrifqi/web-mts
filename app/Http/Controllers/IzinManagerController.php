@@ -21,13 +21,23 @@ class IzinManagerController extends Controller
     {
         $validated = $request->validate(
             [
-                'message' => 'required|text',
+                'message' => 'required|string',
+                'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
                 'tanggal_pulang' => 'required|date',
                 'tanggal_kembali' => 'required|date',
                 'created_by' => 'required|int',
                 'target_siswa_id' => 'required|int'
             ]
         );
+
+        // Handle photo upload
+        if ($request->hasFile('photo')) {
+            $photo = $request->file('photo');
+            $photoName = time() . '_' . $photo->getClientOriginalName();
+            $photo->move(public_path('uploads/izin'), $photoName);
+            $validated['photo'] = 'uploads/izin/' . $photoName;
+        }
+
         Izin::create($validated);
         return redirect()->route('admin.izin.index');
     }

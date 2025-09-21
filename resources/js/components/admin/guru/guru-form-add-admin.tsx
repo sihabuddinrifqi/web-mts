@@ -13,6 +13,7 @@ export default function GuruFormAddAdmin() {
         e.preventDefault();
         post(route('admin.guru.store'));
     };
+
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -29,6 +30,7 @@ export default function GuruFormAddAdmin() {
                             diisi dengan benar dan lengkap untuk keperluan administrasi dan pendataan.
                         </DialogDescription>
                     </DialogHeader>
+
                     <div className="space-y-6 border-t py-4">
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div className="flex flex-col space-y-2">
@@ -58,6 +60,23 @@ export default function GuruFormAddAdmin() {
                                     <SelectContent>
                                         <SelectItem value="pria">Pria</SelectItem>
                                         <SelectItem value="wanita">Wanita</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="flex flex-col space-y-2">
+                                <label htmlFor="pendidikanTerakhir" className="font-medium">
+                                    Pendidikan Terakhir
+                                </label>
+                                <Select onValueChange={(ev) => setData('pendidikan_terakhir', ev as 'SMA' | 'S1' | 'S2' | 'S3')} required>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih pendidikan terakhir" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="SMA">SMA</SelectItem>
+                                        <SelectItem value="S1">S1</SelectItem>
+                                        <SelectItem value="S2">S2</SelectItem>
+                                        <SelectItem value="S3">S3</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

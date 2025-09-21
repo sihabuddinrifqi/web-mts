@@ -3,6 +3,7 @@ import { Siswa, Guru, WaliSiswa } from './users';
 export interface Izin {
     id: number;
     message: string;
+    photo?: string;
     tanggal_pulang: string;
     tanggal_kembali: string;
     created_by?: WaliSiswa;

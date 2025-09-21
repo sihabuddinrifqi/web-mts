@@ -56,7 +56,7 @@ export default function DataTableWalisiswaAdmin({ siswaData, filters }: Props) {
                             <TableHead>Nama</TableHead>
                             <TableHead>Nomor Telpon</TableHead>
                             <TableHead>Jumlah Anak</TableHead>
-                            <TableHead></TableHead>
+                            <TableHead>Username | Password</TableHead>
                             <TableHead></TableHead>
                             {/* <TableHead>Alamat</TableHead> */}
                             {/* <TableHead>Jenis Kelamin</TableHead>
@@ -73,6 +73,9 @@ export default function DataTableWalisiswaAdmin({ siswaData, filters }: Props) {
                                     <TableCell>{siswa.name}</TableCell>
                                     <TableCell>{siswa.phone}</TableCell>
                                     <TableCell>{siswa.anak?.length}</TableCell>
+                                    <TableCell>
+                                        {siswa.username as string} | {siswa.first_password as string}
+                                    </TableCell>
                                     <TableCell>
                                         <WalisiswaViewAdmin walisiswa={siswa} />
                                     </TableCell>

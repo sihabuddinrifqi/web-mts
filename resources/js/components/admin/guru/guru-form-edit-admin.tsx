@@ -19,6 +19,7 @@ interface GuruRequestType {
   name: string;
   jenis_kelamin: 'pria' | 'wanita';
   phone: string;
+  pendidikan_terakhir?: string;
 }
 
 interface Guru {
@@ -28,6 +29,7 @@ interface Guru {
   // tapi frontend akan konsisten menggunakan 'pria'/'wanita'.
   jenis_kelamin: 'pria' | 'wanita' | 'L' | 'P' | 'laki-laki' | 'perempuan';
   phone: string;
+  pendidikan_terakhir?: string;
 }
 
 export default function GuruFormEditAdmin({ id, open, onOpenChange, onUpdateSuccess }: GuruFormEditAdminProps) {
@@ -35,6 +37,7 @@ export default function GuruFormEditAdmin({ id, open, onOpenChange, onUpdateSucc
     name: '',
     jenis_kelamin: 'pria',
     phone: '',
+    pendidikan_terakhir: '',
   });
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -75,6 +78,7 @@ export default function GuruFormEditAdmin({ id, open, onOpenChange, onUpdateSucc
         name: guru.name || '',
         jenis_kelamin: jk,
         phone: guru.phone || '',
+        pendidikan_terakhir: guru.pendidikan_terakhir || '',
       });
     } catch (err: any) {
       console.error('❌ Error load guru:', err);
@@ -179,6 +183,26 @@ export default function GuruFormEditAdmin({ id, open, onOpenChange, onUpdateSucc
               />
             </div>
 
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="pendidikan-terakhir-guru" className="font-medium">Pendidikan Terakhir</label>
+              <Select
+                value={data.pendidikan_terakhir || ''}
+                onValueChange={(val) => handleSetData('pendidikan_terakhir', val)}
+                required
+              >
+                <SelectTrigger id="pendidikan-terakhir-guru">
+                  <SelectValue placeholder="Pilih pendidikan terakhir" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="SMA">SMA</SelectItem>
+                  <SelectItem value="S1">S1</SelectItem>
+                  <SelectItem value="S2">S2</SelectItem>
+                  <SelectItem value="S3">S3</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Batal
@@ -193,4 +217,3 @@ export default function GuruFormEditAdmin({ id, open, onOpenChange, onUpdateSucc
     </Dialog>
   );
 }
-

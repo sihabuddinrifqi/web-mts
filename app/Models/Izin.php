@@ -13,6 +13,7 @@ class Izin extends Model
 
     protected $fillable = [
         'message',
+        'photo',
         'tanggal_pulang',
         'tanggal_kembali',
         'created_by',

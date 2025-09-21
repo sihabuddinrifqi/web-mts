@@ -7,7 +7,7 @@ class Guru extends User
 {
     use HasParent;
 
-    protected $fillable = ['jenis_kelamin'];
+    protected $fillable = ['jenis_kelamin', 'pendidikan_terakhir'];
 
     public function pelajaran()
     {

@@ -8,8 +8,10 @@ export type Guru = {
   username: string;
   first_password: string;
   phone: string;
+  pendidikan_terakhir?: string;
   anak?: any[]; 
   pelajaran?: any[];
+  siswa_didik_count: number;
 };
 
 export type APIPaginateResponse<T> = {
