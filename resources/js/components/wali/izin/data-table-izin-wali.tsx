@@ -38,7 +38,7 @@ export default function DataTableIzinWali({ siswaData, filters }: Props) {
             {/* Search Form */}
             <form onSubmit={handleSearch} className="flex flex-col gap-2 sm:flex-row">
                 <Input
-                    placeholder="Search siswa..."
+                    placeholder="Search Walisiswa..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                     className="w-full sm:max-w-xs"

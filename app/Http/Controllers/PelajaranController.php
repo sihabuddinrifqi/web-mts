@@ -11,9 +11,34 @@ class PelajaranController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $query = Pelajaran::with(['pengampu'])
+            ->withCount('siswa'); // hitung jumlah siswa per pelajaran
+
+        // Filter semester
+        if ($request->filled('semester')) {
+            $query->where('semester', $request->semester);
+        }
+
+        // Filter pengampu (cari berdasarkan nama guru)
+        if ($request->filled('pengampu')) {
+            $query->whereHas('pengampu', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->pengampu . '%');
+            });
+        }
+
+        // Search umum (nama pelajaran)
+        if ($request->filled('search')) {
+            $query->where('nama_pelajaran', 'like', '%' . $request->search . '%');
+        }
+
+        $pelajaran = $query->paginate(10)->withQueryString();
+
+        return inertia('Admin/PelajaranPage', [
+            'siswaData' => $pelajaran,
+            'filters' => $request->only(['search','page','semester','pengampu']),
+        ]);
     }
 
     public function APINilai(Pelajaran $pelajaran)
