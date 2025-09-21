@@ -51,6 +51,7 @@ export default function IzinFormAddWali() {
         
         // Handle form submission
         post(route('wali.izin.create.post', auth.user.id), {
+            forceFormData: true,
             onSuccess: () => {
                 setOpen(false);
                 setTanggalPulang(undefined);

@@ -19,16 +19,14 @@ class IzinManagerController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate(
-            [
-                'message' => 'required|string',
-                'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
-                'tanggal_pulang' => 'required|date',
-                'tanggal_kembali' => 'required|date',
-                'created_by' => 'required|int',
-                'target_siswa_id' => 'required|int'
-            ]
-        );
+        $validated = $request->validate([
+            'message' => 'required|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
+            'tanggal_pulang' => 'required|date',
+            'tanggal_kembali' => 'required|date',
+            'created_by' => 'required|integer',
+            'target_siswa_id' => 'required|integer',
+        ]);
 
         // Handle photo upload
         if ($request->hasFile('photo')) {
@@ -39,8 +37,11 @@ class IzinManagerController extends Controller
         }
 
         Izin::create($validated);
+
         return redirect()->route('admin.izin.index');
     }
+
+
 
     public function update(Request $request, Izin $izin)
     {
