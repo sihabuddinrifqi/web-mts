@@ -62,20 +62,31 @@ class WalisiswaController extends Controller
 }
 
     public function store_izin(Request $request)
-        {
-            $validated = $request->validate([
-                'created_by' => 'required|integer',
-                'target_siswa_id' => 'required|integer|exists:users,id',
-                'message' => 'required|string|max:500',
-                'tanggal_pulang' => 'required|date',
-                'tanggal_kembali' => 'required|date|after_or_equal:tanggal_pulang',
-            ]);
+    {
+        // Validasi semua data, termasuk foto
+        $validated = $request->validate([
+            'created_by' => 'required|integer',
+            'target_siswa_id' => 'required|integer|exists:users,id',
+            'message' => 'required|string|max:500',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
+            'tanggal_pulang' => 'required|date',
+            'tanggal_kembali' => 'required|date|after_or_equal:tanggal_pulang',
+        ]);
 
-            Izin::create($validated);
-
-            return redirect()->route('wali.izin')
-                            ->with('success', 'Izin berhasil ditambahkan.');
+        // Handle file upload
+        if ($request->hasFile('photo')) {
+            // Simpan foto di dalam direktori 'public/uploads/izin' agar bisa diakses dari web
+            $path = $request->file('photo')->store('uploads/izin', 'public');
+            
+            // Path sudah benar karena menggunakan disk 'public'
+            $validated['photo'] = '/storage/' . $path;
         }
+
+        $izin = Izin::create($validated);
+
+        return redirect()->route('wali.izin')
+                        ->with('success', 'Izin berhasil ditambahkan.');
+    }
 
     public function create_izin_form()
     {
@@ -87,17 +98,28 @@ class WalisiswaController extends Controller
         ]);
     }
 
-    public function create_izin(Request $request, WaliSiswa $walisiswa)
+    public function create_izin(Request $request)
     {
+        // Validasi semua data, termasuk foto
         $validated = $request->validate([
             'message' => 'required|string|max:500',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
             'target_siswa_id' => 'required|int',
             'created_by' => 'required|int',
             'tanggal_pulang' => 'required|date',
             'tanggal_kembali' => 'required|date'
         ]);
 
-        Izin::create($validated);
+        // Handle file upload
+        if ($request->hasFile('photo')) {
+            // Simpan foto di dalam direktori 'public/uploads/izin' agar bisa diakses dari web
+            $path = $request->file('photo')->store('uploads/izin', 'public');
+            
+            // Path sudah benar karena menggunakan disk 'public'
+            $validated['photo'] = '/storage/' . $path;
+        }
+
+        $izin = Izin::create($validated);
 
         return redirect()->route('wali.izin');
     }
@@ -122,6 +144,14 @@ class WalisiswaController extends Controller
         
         if ($izin->status !== null) {
             return redirect()->back()->with('error', 'Izin yang sudah diproses tidak dapat dihapus.');
+        }
+
+        // Hapus file foto jika ada
+        if ($izin->photo) {
+            $filePath = str_replace('/storage/', '', $izin->photo);
+            if (\Storage::disk('public')->exists($filePath)) {
+                \Storage::disk('public')->delete($filePath);
+            }
         }
 
         $izin->delete();

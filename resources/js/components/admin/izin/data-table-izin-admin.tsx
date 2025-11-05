@@ -88,7 +88,7 @@ export default function DataTableIzinAdmin({ siswaData, filters }: Props) {
                                                     <div className="flex flex-col items-center space-y-4">
                                                         <h3 className="text-lg font-semibold">Foto Bukti Pendukung</h3>
                                                         <img
-                                                            src={`/${data.photo}`}
+                                                            src={data.photo}
                                                             alt="Bukti pendukung izin"
                                                             className="max-w-full max-h-96 object-contain rounded-lg border"
                                                         />

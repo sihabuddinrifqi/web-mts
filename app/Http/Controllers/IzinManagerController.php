@@ -17,31 +17,38 @@ class IzinManagerController extends Controller
         ]);
     }
 
+    /**
+     * [PERBAIKAN] Memperbaiki alur logika untuk menyimpan data dan file.
+     */
     public function store(Request $request)
     {
+        // [1] Validasi semua data, termasuk foto.
+        // Foto bersifat opsional (nullable), harus berupa gambar, dan ukurannya maksimal 5MB.
         $validated = $request->validate([
             'message' => 'required|string',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
             'tanggal_pulang' => 'required|date',
             'tanggal_kembali' => 'required|date',
-            'created_by' => 'required|integer',
-            'target_siswa_id' => 'required|integer',
+            'created_by' => 'required|integer|exists:users,id',
+            'target_siswa_id' => 'required|integer|exists:users,id',
         ]);
 
-        // Handle photo upload
+        // [2] Cek apakah ada file foto yang diunggah.
         if ($request->hasFile('photo')) {
-            $photo = $request->file('photo');
-            $photoName = time() . '_' . $photo->getClientOriginalName();
-            $photo->move(public_path('uploads/izin'), $photoName);
-            $validated['photo'] = 'uploads/izin/' . $photoName;
+            // Simpan foto di dalam direktori 'public/uploads/izin' agar bisa diakses dari web.
+            // Simpan path-nya ke dalam variabel.
+            $path = $request->file('photo')->store('uploads/izin', 'public');
+            
+            // [3] Path sudah benar karena menggunakan disk 'public'.
+            $validated['photo'] = '/storage/' . $path;
         }
 
+        // [4] Simpan semua data yang sudah divalidasi ke database.
         Izin::create($validated);
 
-        return redirect()->route('admin.izin.index');
+        // [5] Kembalikan redirect setelah semuanya berhasil.
+        return redirect()->back()->with('success', 'Izin berhasil diajukan.');
     }
-
-
 
     public function update(Request $request, Izin $izin)
     {
@@ -50,17 +57,23 @@ class IzinManagerController extends Controller
             'status' => ['required', Rule::in(['accepted', 'rejected'])]
         ]);
         $izin->update($validated);
-        return response()->json(
-            [
-                'message' => "successfully updated izin " . $izin->id,
-                'received' => 1,
-                'data' => $izin
-            ]
-        );
+        return response()->json([
+            'message' => "successfully updated izin " . $izin->id,
+            'received' => 1,
+            'data' => $izin
+        ]);
     }
 
     public function destroy(Izin $izin)
     {
+        // Tambahkan logika untuk menghapus file foto jika ada
+        if ($izin->photo) {
+            // Hapus file dari storage
+            $filePath = str_replace('/storage/', '', $izin->photo);
+            if (\Storage::disk('public')->exists($filePath)) {
+                \Storage::disk('public')->delete($filePath);
+            }
+        }
         $izin->delete();
         return redirect()->route('admin.izin.index');
     }

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Izin extends Model
 {
@@ -22,6 +24,24 @@ class Izin extends Model
         'status',
         'closed_at',
     ];
+
+    public function getPhotoAttribute($value)
+    {
+        if (!$value) return null;
+        
+        // Jika sudah berupa URL lengkap, return as is
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
+        
+        // Jika berupa path storage, convert ke URL
+        if (str_starts_with($value, '/storage/')) {
+            return $value;
+        }
+        
+        // Jika berupa path relatif, convert ke URL storage
+        return Storage::url($value);
+    }
 
     protected $casts = [
         'tanggal_pulang' => 'datetime',

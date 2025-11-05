@@ -49,8 +49,12 @@ export default function IzinFormAddWali() {
             return;
         }
         
-        // Handle form submission
-        post(route('wali.izin.create.post', auth.user.id), {
+        // Debug: Log form data
+        console.log('Form data before submission:', data);
+        console.log('Photo file:', data.photo);
+        
+        // Handle form submission using Inertia post
+        post(route('wali.izin.create.post'), {
             forceFormData: true,
             onSuccess: () => {
                 setOpen(false);
@@ -58,6 +62,10 @@ export default function IzinFormAddWali() {
                 setTanggalKembali(undefined);
                 setPhotoPreview(null);
                 reset();
+            },
+            onError: (errors) => {
+                console.error('Form submission errors:', errors);
+                alert('Terjadi kesalahan saat mengirim data: ' + JSON.stringify(errors));
             }
         });
     };
@@ -132,7 +140,7 @@ export default function IzinFormAddWali() {
         setData('photo', null);
         setPhotoPreview(null);
         // Reset file input
-        const fileInput = document.getElementById('photo-upload') as HTMLInputElement;
+        const fileInput = document.getElementById('photo') as HTMLInputElement;
         if (fileInput) {
             fileInput.value = '';
         }
@@ -189,7 +197,7 @@ export default function IzinFormAddWali() {
                         </div>
 
                         <div className="flex flex-col space-y-2">
-                            <label htmlFor="photo-upload" className="text-sm font-medium">
+                            <label htmlFor="photo" className="text-sm font-medium">
                                 Foto Bukti Pendukung <span className="text-muted-foreground">(Opsional)</span>
                             </label>
                             <div className="space-y-2">
@@ -197,12 +205,12 @@ export default function IzinFormAddWali() {
                                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
                                         <Upload className="mx-auto h-12 w-12 text-gray-400" />
                                         <div className="mt-2">
-                                            <label htmlFor="photo-upload" className="cursor-pointer">
+                                            <label htmlFor="photo" className="cursor-pointer">
                                                 <span className="text-sm text-gray-600">
                                                     Klik untuk upload foto atau drag & drop
                                                 </span>
                                                 <input
-                                                    id="photo-upload"
+                                                    id="photo"
                                                     type="file"
                                                     accept="image/*"
                                                     onChange={handlePhotoChange}
